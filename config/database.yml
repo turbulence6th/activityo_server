@@ -1,0 +1,25 @@
+default: &default
+  adapter: postgresql
+  encoding: unicode
+  pool: 5
+  host: localhost
+  
+
+development:
+  <<: *default
+  username: postgres
+  password: postgres
+  database: liyo_development
+  
+
+test:
+  <<: *default
+  username: postgres
+  password: postgres
+  database: liyo_test
+
+production:
+  <<: *default
+  username: rails
+  password: <%= ENV['APP_DATABASE_PASSWORD'] %>
+  database: liyo_production
