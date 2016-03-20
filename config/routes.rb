@@ -8,6 +8,22 @@ Rails.application.routes.draw do
    :format => :json
   }
   
+  post 'onesignal' => 'users#onesignal', :defaults => {
+   :format => :json
+  }
+  
+  post 'send_message' => 'users#send_message', :defaults => {
+   :format => :json
+  }
+  
+  post 'getmessages' => 'users#getmessages', :defaults => {
+   :format => :json
+  }
+  
+  post 'showMessage' => 'users#showMessage', :defaults => {
+   :format => :json
+  }
+  
   post 'getEvents' => 'events#getEvents', :defaults => {
    :format => :json
   }

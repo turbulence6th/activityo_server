@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20160318192956) do
+ActiveRecord::Schema.define(version: 20160320132420) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -45,6 +45,17 @@ ActiveRecord::Schema.define(version: 20160318192956) do
   add_index "likes_users", ["like_id"], name: "index_likes_users_on_like_id", using: :btree
   add_index "likes_users", ["user_id"], name: "index_likes_users_on_user_id", using: :btree
 
+  create_table "messages", force: :cascade do |t|
+    t.integer  "from_id"
+    t.integer  "to_id"
+    t.string   "text"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
+
+  add_index "messages", ["from_id"], name: "index_messages_on_from_id", using: :btree
+  add_index "messages", ["to_id"], name: "index_messages_on_to_id", using: :btree
+
   create_table "users", force: :cascade do |t|
     t.string   "name"
     t.string   "email"
@@ -57,15 +68,17 @@ ActiveRecord::Schema.define(version: 20160318192956) do
     t.string   "facebookID"
     t.string   "googleID"
     t.string   "twitterID"
-    t.uuid     "token"
+    t.uuid     "auth_token"
+    t.uuid     "onesignal_token"
     t.boolean  "deleted"
-    t.datetime "created_at",  null: false
-    t.datetime "updated_at",  null: false
+    t.datetime "created_at",      null: false
+    t.datetime "updated_at",      null: false
   end
 
+  add_index "users", ["auth_token"], name: "index_users_on_auth_token", using: :btree
   add_index "users", ["facebookID"], name: "index_users_on_facebookID", using: :btree
   add_index "users", ["googleID"], name: "index_users_on_googleID", using: :btree
-  add_index "users", ["token"], name: "index_users_on_token", using: :btree
+  add_index "users", ["onesignal_token"], name: "index_users_on_onesignal_token", using: :btree
   add_index "users", ["twitterID"], name: "index_users_on_twitterID", using: :btree
 
 end
