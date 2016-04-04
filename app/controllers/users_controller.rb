@@ -68,7 +68,6 @@ class UsersController < ApplicationController
         format.json { render :json => { :auth_token => nil } }
       end
     end
-    facefa
   end
   
   def onesignal
