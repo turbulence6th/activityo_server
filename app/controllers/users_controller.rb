@@ -106,4 +106,21 @@ class UsersController < ApplicationController
     end
   end
   
+  def getUserInfo
+    
+   events = Event.where(:user => @user)
+   
+   comments = ActiveRecord::Base.connection.
+    execute("select users.name, comments.text, comments.created_at from users, comments where users.id=comments.from_id and comments.to_id=#{@user.id}")
+    
+   
+
+    respond_to do |format|
+      format.json { render :json => {:user => @user, :events => events, :comments => comments } }
+    end
+
+  end
+  
+
+  
 end

@@ -36,4 +36,10 @@ Rails.application.routes.draw do
    :format => :json
   }
   
+  post 'getUserInfo' => 'users#getUserInfo', :defaults => {
+    :format => :json
+  }
+  
+
+  
 end
