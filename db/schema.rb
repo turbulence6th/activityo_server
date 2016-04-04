@@ -11,10 +11,21 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20160320132420) do
+ActiveRecord::Schema.define(version: 20160404133420) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
+
+  create_table "comments", force: :cascade do |t|
+    t.integer  "from_id"
+    t.integer  "to_id"
+    t.string   "text"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
+
+  add_index "comments", ["from_id"], name: "index_comments_on_from_id", using: :btree
+  add_index "comments", ["to_id"], name: "index_comments_on_to_id", using: :btree
 
   create_table "events", force: :cascade do |t|
     t.integer  "user_id"
@@ -29,6 +40,17 @@ ActiveRecord::Schema.define(version: 20160320132420) do
     t.datetime "created_at",  null: false
     t.datetime "updated_at",  null: false
   end
+
+  create_table "friends", force: :cascade do |t|
+    t.integer  "user_1_id"
+    t.integer  "user_2_id"
+    t.boolean  "accepted"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
+
+  add_index "friends", ["user_1_id"], name: "index_friends_on_user_1_id", using: :btree
+  add_index "friends", ["user_2_id"], name: "index_friends_on_user_2_id", using: :btree
 
   create_table "likes", force: :cascade do |t|
     t.string "name"
