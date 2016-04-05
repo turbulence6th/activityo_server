@@ -113,12 +113,32 @@ class UsersController < ApplicationController
    comments = ActiveRecord::Base.connection.
     execute("select users.name, comments.text, comments.created_at from users, comments where users.id=comments.from_id and comments.to_id=#{@user.id}")
     
-   
+   friends = @user.friends
 
     respond_to do |format|
-      format.json { render :json => {:user => @user, :events => events, :comments => comments } }
+      format.json { render :json => {:user => @user, :events => events, :comments => comments, :friends => friends } }
     end
 
+  end
+  
+  def OtherUserInfo
+    
+   
+    
+    otherUser = User.find_by(:id => params[:id])
+    
+    events = Event.where(:user => otherUser)
+    
+    comments = ActiveRecord::Base.connection.
+    execute("select users.name, comments.text, comments.created_at from users, comments where users.id=comments.from_id and comments.to_id=#{otherUser.id}")
+    
+    friends = other_user.friends
+
+    respond_to do |format|
+      format.json { render :json => {:user => other_user, :events => events, :comments => comments, :friends => friends } }
+    end
+    
+    
   end
   
 

@@ -4,7 +4,7 @@ class ApplicationController < ActionController::Base
   
   before_action :require_user, :except => ['loginFacebook']
   def require_user
-    @user = User.find_by(:auth_token => params['auth_token'])
+    @user = User.find_by(:auth_token => params[:auth_token])
   end
   
   def send_notification(onesignal_token, text)
