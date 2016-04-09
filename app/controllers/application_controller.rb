@@ -1,6 +1,6 @@
 class ApplicationController < ActionController::Base
   
-  protect_from_forgery with: :reset_session
+  protect_from_forgery with: :null_session
   
   before_action :require_user, :except => ['loginFacebook']
   def require_user

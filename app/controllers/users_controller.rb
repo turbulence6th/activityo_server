@@ -2,20 +2,22 @@ class UsersController < ApplicationController
   
   def loginFacebook
     userParams = JSON.parse(Net::HTTP.get(URI.parse("https://graph.facebook.com/me?" +
-    "fields=id,name,email,gender,birthday,education,likes&access_token=" + params[:access_token])))
+    "fields=id,name,email,gender,birthday,education,likes,picture&access_token=" + params[:access_token])))
 
     user = User.find_by(:facebookID => userParams['id'])
-
+  byebug
     if user
       respond_to do |format|
         format.json { render :json => { :auth_token => user.auth_token } }
       end
     elsif userParams['id']
+      education = userParams['education'][-1]['school']['name'] if userParams['education']
       user = User.create(:name => userParams['name'], :email => userParams['email'], :gender => userParams['gender'],
-        :birthday => userParams['birthday'], :role => 'member', :facebookID => userParams['id'],
+        :birthday => userParams['birthday'], :education => education, :role => 'member', :facebookID => userParams['id'],
         :deleted => false, :auth_token => SecureRandom.uuid)
-  
-      user.education = userParams['education'][-1]['school']['name'] if userParams['education']
+     
+      imageUrl = "https://graph.facebook.com/#{userParams['id']}/picture?type=large"
+      user.image = Image.new(:imagefile => URI.parse(imageUrl))
   
       respond_to do |format|
         format.json { render :json => { :auth_token => user.auth_token } }
@@ -115,7 +117,11 @@ class UsersController < ApplicationController
    friends = @user.friends
 
     respond_to do |format|
-      format.json { render :json => {:user => @user, :events => events, :comments => comments, :friends => friends } }
+      format.json { render :json => {:user => @user, 
+        :events => events, 
+        :comments => comments, 
+        :friends => friends,
+        :image => URI.join(request.url, @user.image.imagefile.url).to_s } }
     end
 
   end

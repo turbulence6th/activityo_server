@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20160404192429) do
+ActiveRecord::Schema.define(version: 20160408193902) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -52,6 +52,17 @@ ActiveRecord::Schema.define(version: 20160404192429) do
   add_index "friends", ["user_1_id"], name: "index_friends_on_user_1_id", using: :btree
   add_index "friends", ["user_2_id"], name: "index_friends_on_user_2_id", using: :btree
 
+  create_table "images", force: :cascade do |t|
+    t.integer  "imageable_id"
+    t.string   "imageable_type"
+    t.string   "imagefile_file_name"
+    t.string   "imagefile_content_type"
+    t.integer  "imagefile_file_size"
+    t.datetime "imagefile_updated_at"
+  end
+
+  add_index "images", ["imageable_type", "imageable_id"], name: "index_images_on_imageable_type_and_imageable_id", using: :btree
+
   create_table "likes", force: :cascade do |t|
     t.string "name"
     t.string "likeID"
@@ -78,16 +89,6 @@ ActiveRecord::Schema.define(version: 20160404192429) do
   add_index "messages", ["from_id"], name: "index_messages_on_from_id", using: :btree
   add_index "messages", ["to_id"], name: "index_messages_on_to_id", using: :btree
 
-  create_table "sessions", force: :cascade do |t|
-    t.string   "session_id", null: false
-    t.text     "data"
-    t.datetime "created_at"
-    t.datetime "updated_at"
-  end
-
-  add_index "sessions", ["session_id"], name: "index_sessions_on_session_id", unique: true, using: :btree
-  add_index "sessions", ["updated_at"], name: "index_sessions_on_updated_at", using: :btree
-
   create_table "users", force: :cascade do |t|
     t.string   "name"
     t.string   "email"
@@ -100,6 +101,9 @@ ActiveRecord::Schema.define(version: 20160404192429) do
     t.string   "facebookID"
     t.string   "googleID"
     t.string   "twitterID"
+    t.boolean  "notification"
+    t.boolean  "showPhone"
+    t.boolean  "showFriends"
     t.uuid     "auth_token"
     t.uuid     "onesignal_token"
     t.boolean  "deleted"

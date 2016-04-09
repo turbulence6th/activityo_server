@@ -13,6 +13,8 @@ class User < ActiveRecord::Base
   
   has_many :user_2, :class_name => 'Friend', :foreign_key => 'user_2_id', :dependent => :destroy
   
+  has_one :image, :as => :imageable, :dependent => :destroy
+  
   public
   def friends
     user1 = User.select('users.*')

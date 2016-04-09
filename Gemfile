@@ -1,5 +1,7 @@
 source 'https://rubygems.org'
 
+gem "paperclip", "~> 4.3"
+
 gem 'rack-cors', :require => 'rack/cors'
 
 gem 'geocoder'
