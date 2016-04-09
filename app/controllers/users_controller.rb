@@ -141,6 +141,27 @@ class UsersController < ApplicationController
     
   end
   
+  def SendComment
+    
+    commentText = params[:text]
+    id = params[:id]
+    
+    comment = Comment.new(:from => @user,:to => id,:text => commentText)
+    
+    comment.save
+    
+    success = true
+    
+    respond_to do |format|
+      format.json { render :json => success  }
+    end
+    
+    
+    
+    
+    
+  end
+  
 
   
 end
