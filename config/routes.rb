@@ -44,4 +44,8 @@ Rails.application.routes.draw do
      :format => :json
   }
   
+  post 'sendComment' => 'users#SendComment', :defaults => {
+     :format => :json
+  }
+  
 end
