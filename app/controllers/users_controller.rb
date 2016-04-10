@@ -121,7 +121,7 @@ class UsersController < ApplicationController
         :events => events, 
         :comments => comments, 
         :friends => friends,
-        :image => URI.join(request.url, @user.image.imagefile.url).to_s } }
+        :image => URI.join(request.url, @user.get_image.imagefile.url).to_s } }
     end
 
   end

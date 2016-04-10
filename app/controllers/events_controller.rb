@@ -5,9 +5,8 @@ class EventsController < ApplicationController
     events = Event.near([params[:lat], params[:long]], 10000, :order => "distance")
         .offset(params[:len]).limit(10)
         
-    if params[:eventType] != ""
-      events = events.where(:eventType => Event.eventTypes[params[:eventType]]) 
-    end  
+    
+   
       
     respond_to do |format|
       format.json { render :json => { :events => events } }

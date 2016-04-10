@@ -27,4 +27,11 @@ class User < ActiveRecord::Base
     user1.union(user2)
   end
   
+  def get_image
+    if !self.image
+      return Image.new
+    end
+    return self.image
+  end
+  
 end
