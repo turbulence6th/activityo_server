@@ -5,7 +5,7 @@ class UsersController < ApplicationController
     "fields=id,name,email,gender,birthday,education,likes,picture&access_token=" + params[:access_token])))
 
     user = User.find_by(:facebookID => userParams['id'])
-  byebug
+    
     if user
       respond_to do |format|
         format.json { render :json => { :auth_token => user.auth_token } }
@@ -135,12 +135,12 @@ class UsersController < ApplicationController
     events = Event.where(:user => otherUser)
     
     comments = ActiveRecord::Base.connection.
-    execute("select users.name, comments.text, comments.created_at from users, comments where users.id=comments.from_id and comments.to_id=#{otherUser.id}")
+      execute("select users.name, comments.text, comments.created_at from users, comments where users.id=comments.from_id and comments.to_id=#{otherUser.id}")
     
-    friends = other_user.friends
+    friends = otherUser.friends
 
     respond_to do |format|
-      format.json { render :json => {:user => other_user, :events => events, :comments => comments, :friends => friends } }
+      format.json { render :json => {:user => otherUser, :events => events, :comments => comments, :friends => friends } }
     end
     
     

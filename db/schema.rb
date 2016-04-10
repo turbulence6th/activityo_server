@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20160408193902) do
+ActiveRecord::Schema.define(version: 20160410151240) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -62,6 +62,16 @@ ActiveRecord::Schema.define(version: 20160408193902) do
   end
 
   add_index "images", ["imageable_type", "imageable_id"], name: "index_images_on_imageable_type_and_imageable_id", using: :btree
+
+  create_table "joins", force: :cascade do |t|
+    t.integer "event_id"
+    t.integer "user_id"
+    t.boolean "waiting"
+    t.boolean "allowed"
+  end
+
+  add_index "joins", ["event_id"], name: "index_joins_on_event_id", using: :btree
+  add_index "joins", ["user_id"], name: "index_joins_on_user_id", using: :btree
 
   create_table "likes", force: :cascade do |t|
     t.string "name"

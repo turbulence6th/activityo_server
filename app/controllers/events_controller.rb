@@ -2,14 +2,12 @@ class EventsController < ApplicationController
   
   def getEvents
     
-    if params[:eventType]!= 'all'
-    events = Event.near([params[:lat], params[:long]], 500, :order => "distance").where(:eventType => params[:eventType])
-      .offset(params[:len]).limit(10)
-    else  
-    events = Event.near([params[:lat], params[:long]], 500, :order => "distance")
-      .offset(params[:len]).limit(10)  
-      
-    end    
+    events = Event.near([params[:lat], params[:long]], 10000, :order => "distance")
+        .offset(params[:len]).limit(10)
+        
+    if params[:eventType] != ""
+      events = events.where(:eventType => Event.eventTypes[params[:eventType]]) 
+    end  
       
     respond_to do |format|
       format.json { render :json => { :events => events } }
@@ -21,7 +19,7 @@ class EventsController < ApplicationController
     event.user = @user
     event.save
     respond_to do |format|
-      format.json { render :json => { :errors => nil } }
+      format.json { render :json => { :errors => event.errors } }
     end
   end
   
