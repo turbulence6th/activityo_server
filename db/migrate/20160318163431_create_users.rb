@@ -18,8 +18,6 @@ class CreateUsers < ActiveRecord::Migration
       t.boolean :showPhone
       t.boolean :showFriends
       
-      t.uuid :auth_token, :index => true
-      t.uuid :onesignal_token, :index => true
       t.boolean :deleted  
       
       t.timestamps null: false

@@ -8,7 +8,7 @@ Rails.application.routes.draw do
    :format => :json
   }
   
-  post 'onesignal' => 'users#onesignal', :defaults => {
+  post 'logout' => 'users#logout', :defaults => {
    :format => :json
   }
   

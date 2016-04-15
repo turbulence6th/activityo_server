@@ -45,6 +45,8 @@ class Event < ActiveRecord::Base
   
   has_many :joins, :dependent => :destroy
   
+  has_many :message_receive, :class_name => 'Message',:as => :to, :dependent => :destroy
+  
   geocoded_by :address
   after_validation :geocode
   

@@ -2,12 +2,14 @@ class User < ActiveRecord::Base
   
   enum :gender => [:male, :female]
   
+  enum :role => [:admin, :member]
+  
   has_many :events, :dependent => :destroy
   
   has_and_belongs_to_many :likes
   
   has_many :message_send, :class_name => 'Message', :foreign_key => 'from_id', :dependent => :destroy
-  has_many :message_receive, :class_name => 'Message', :foreign_key => 'to_id', :dependent => :destroy
+  has_many :message_receive, :class_name => 'Message',:as => :to, :dependent => :destroy
   
   has_many :user_1, :class_name => 'Friend', :foreign_key => 'user_1_id', :dependent => :destroy 
   has_many :user_2, :class_name => 'Friend', :foreign_key => 'user_2_id', :dependent => :destroy
@@ -15,6 +17,8 @@ class User < ActiveRecord::Base
   has_one :image, :as => :imageable, :dependent => :destroy
   
   has_many :joins, :dependent => :destroy
+  
+  has_many :sessions, :dependent => :destroy
   
   public
   def friends

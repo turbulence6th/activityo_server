@@ -7,20 +7,27 @@ class UsersController < ApplicationController
     user = User.find_by(:facebookID => userParams['id'])
     
     if user
+      Session.where(:onesignal_token => params[:onesignal_token]).destroy_all
+      session = Session.new(:auth_token => SecureRandom.uuid, :onesignal_token => params[:onesignal_token])
+      user.sessions << session
       respond_to do |format|
-        format.json { render :json => { :auth_token => user.auth_token } }
+        format.json { render :json => { :auth_token => session.auth_token } }
       end
     elsif userParams['id']
       education = userParams['education'][-1]['school']['name'] if userParams['education']
       user = User.create(:name => userParams['name'], :email => userParams['email'], :gender => userParams['gender'],
         :birthday => userParams['birthday'], :education => education, :role => 'member', :facebookID => userParams['id'],
-        :deleted => false, :auth_token => SecureRandom.uuid)
+        :deleted => false)
      
       imageUrl = "https://graph.facebook.com/#{userParams['id']}/picture?type=large"
       user.image = Image.new(:imagefile => URI.parse(imageUrl))
+      
+      Session.where(:onesignal_token => params[:onesignal_token]).destroy_all
+      session = Session.new(:auth_token => SecureRandom.uuid, :onesignal_token => params[:onesignal_token])
+      user.sessions << session
   
       respond_to do |format|
-        format.json { render :json => { :auth_token => user.auth_token } }
+        format.json { render :json => { :auth_token => session.auth_token } }
       end    
       Thread.new do
         if userParams['likes']
@@ -55,15 +62,21 @@ class UsersController < ApplicationController
     user = User.find_by(:googleID => userParams['id'])
     
     if user
+      Session.where(:onesignal_token => params[:onesignal_token]).destroy_all
+      session = Session.new(:auth_token => SecureRandom.uuid, :onesignal_token => params[:onesignal_token])
+      user.sessions << session
       respond_to do |format|
-        format.json { render :json => { :auth_token => user.auth_token } }
+        format.json { render :json => { :auth_token => session.auth_token } }
       end
     elsif userParams['id']
       user = User.create(:name => userParams['displayName'], :email => userParams['emails'][0]['value'], :gender => userParams['gender'],
         :birthday => userParams['birthday'], :role => 'member', :googleID => userParams['id'],
-        :deleted => false, :auth_token => SecureRandom.uuid)
+        :deleted => false)
+      Session.where(:onesignal_token => params[:onesignal_token]).destroy_all
+      session = Session.new(:auth_token => SecureRandom.uuid, :onesignal_token => params[:onesignal_token])
+      user.sessions << session
       respond_to do |format|
-        format.json { render :json => { :auth_token => user.auth_token } }
+        format.json { render :json => { :auth_token => session.auth_token } }
       end
     else
       respond_to do |format|
@@ -72,26 +85,27 @@ class UsersController < ApplicationController
     end
   end
   
-  def onesignal
-    @user.update_attributes(:onesignal_token => params[:onesignal_token])
+  def logout
+    @session.destroy
     respond_to do |format|
-      format.json { render :json => { :success => true } }
+      format.json { render :json => { :success=> true } }
     end
   end
   
   def send_message
     user_receiver = User.find_by(:id => params[:id])
-    puts send_notification(user_receiver.onesignal_token, params[:text]).body
     message = Message.new(:to => user_receiver, :text => params[:text])
     @user.message_send << message
+    puts send_notification(user_receiver, message).body
     respond_to do |format|
       format.json { render :json => { :message => message } }
     end
   end
   
   def getmessages
-      users = User.select("users.id, users.name").from('users, messages')
-        .where('messages.to_id=? AND messages.from_id=users.id', @user.id).distinct
+    users = User.select("users.id, users.name").from('users, messages')
+        .where('(messages.to_id=? AND messages.from_id=users.id) OR (messages.from_id=? AND messages.to_id=users.id)', 
+        @user.id, @user.id).distinct
     respond_to do |format|
       format.json { render :json => { :userList => users } }
     end
@@ -100,8 +114,7 @@ class UsersController < ApplicationController
   def showMessage
     message_user = User.select('users.id, users.name').find_by(:id => params[:id])
     messageList = Message.where('(to_id=? AND from_id=?) OR (to_id=? AND from_id=?)',
-     @user.id, message_user.id, message_user.id, @user.id).order('created_at ASC')
-     
+     @user.id, message_user.id, message_user.id, @user.id).order('created_at DESC').offset(params[:len]).limit(40)
     respond_to do |format|
       format.json { render :json => { :user => message_user, :messageList => messageList } }
     end
@@ -160,10 +173,6 @@ class UsersController < ApplicationController
     respond_to do |format|
       format.json { render :json => success  }
     end
-    
-    
-    
-    
     
   end
   
