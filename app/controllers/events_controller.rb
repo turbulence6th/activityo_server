@@ -1,13 +1,18 @@
 class EventsController < ApplicationController
   
   def getEvents
-    
-    events = Event.near([params[:lat], params[:long]], 10000, :order => "distance")
+    events = Event.near([params[:lat], params[:long]], params[:distance], :order => "distance")
         .offset(params[:len]).limit(10)
-        
+    eventTypes = params[:eventTypes]
+    eventTypeParams = []
+    eventTypes.each do |type|
+      if type['checked'] == 'true'
+        eventTypeParams << Event.eventTypes[type['value']]
+      end
+    end
+    events = events.where(:eventType => eventTypeParams)
+    events = events.where("name ILIKE ?", "%#{params[:eventName]}%")
     
-   
-      
     respond_to do |format|
       format.json { render :json => { :events => events } }
     end

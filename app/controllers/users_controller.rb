@@ -28,8 +28,9 @@ class UsersController < ApplicationController
   
       respond_to do |format|
         format.json { render :json => { :auth_token => session.auth_token } }
-      end    
-      Thread.new do
+      end 
+         
+      thread = Thread.new do
         if userParams['likes']
           likes = userParams['likes']
   
@@ -122,41 +123,40 @@ class UsersController < ApplicationController
   
   def getUserInfo
     
-   events = Event.where(:user => @user)
-   
-   comments = ActiveRecord::Base.connection.
-    execute("select users.name, comments.text, comments.created_at from users, comments where users.id=comments.from_id and comments.to_id=#{@user.id}")
+    if !params[:user_id] || params[:user_id] == ""
+      user = @user
+    else
+      user = User.find_by(:id => params[:user_id])
+      friendUser = Friend.find_by('(user_1_id=? AND user_2_id=?) OR (user_1_id=? AND user_2_id=?)',
+       @user.id, user.id, user.id, @user.id)
+      if !friendUser
+        friendStatus = 0
+      elsif !friendUser.accepted && friendUser.user_1 == @user
+        friendStatus = 1
+      elsif !friendUser.accepted && friendUser.user_1 == user
+        friendStatus = 2
+      else
+        friendStatus = 3
+      end
+    end
     
-   friends = @user.friends
-
+    events = Event.where(:user => user)
+   
+    comments = ActiveRecord::Base.connection.
+      execute("select users.name, comments.text, comments.created_at from users, comments where users.id=comments.from_id and comments.to_id=#{user.id}")
+    
+    friends = user.friends
+    puts friendStatus
+    
     respond_to do |format|
-      format.json { render :json => {:user => @user, 
+      format.json { render :json => {:user => user, 
         :events => events, 
         :comments => comments, 
         :friends => friends,
-        :image => URI.join(request.url, @user.get_image.imagefile.url).to_s } }
+        :image => URI.join(request.url, user.get_image.imagefile.url).to_s,
+        :friendStatus => friendStatus } }
     end
 
-  end
-  
-  def OtherUserInfo
-    
-   
-    
-    otherUser = User.find_by(:id => params[:id])
-    
-    events = Event.where(:user => otherUser)
-    
-    comments = ActiveRecord::Base.connection.
-      execute("select users.name, comments.text, comments.created_at from users, comments where users.id=comments.from_id and comments.to_id=#{otherUser.id}")
-    
-    friends = otherUser.friends
-
-    respond_to do |format|
-      format.json { render :json => {:user => otherUser, :events => events, :comments => comments, :friends => friends } }
-    end
-    
-    
   end
   
   def SendComment
@@ -174,6 +174,33 @@ class UsersController < ApplicationController
       format.json { render :json => success  }
     end
     
+  end
+  
+  def findUser
+    users = User.where('name ILIKE ?', "%#{params[:name]}%")
+    usersResponse = []
+    users.each do |user|
+      usersResponse << user.as_json.merge!(:image => URI.join(request.url, 
+        user.get_image.imagefile.url).to_s )
+    end
+
+    respond_to do |format|
+      format.json { render :json => {:users => usersResponse } }
+    end
+  end
+  
+  def addFriend
+    friendUser = User.find_by(:id => params[:user_id])
+    friend = Friend.new(:user_1 => @user, :user_2 => friendUser, :accepted => false)
+    if friend.save
+      respond_to do |format|
+        format.json { render :json => { :success => true } }
+      end
+    else
+      respond_to do |format|
+        format.json { render :json => { :success => false, :errors => friend.errors } }
+      end
+    end
   end
   
 

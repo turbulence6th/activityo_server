@@ -48,4 +48,12 @@ Rails.application.routes.draw do
      :format => :json
   }
   
+  post 'finduser' => 'users#findUser', :defaults => {
+     :format => :json
+  }
+  
+  post 'addFriend' => 'users#addFriend', :defaults => {
+    :format => :json
+  }
+  
 end

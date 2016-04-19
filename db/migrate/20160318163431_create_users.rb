@@ -12,9 +12,7 @@ class CreateUsers < ActiveRecord::Migration
       
       t.string :facebookID, :index => true
       t.string :googleID, :index => true
-      t.string :twitterID, :index => true
       
-      t.boolean :notification
       t.boolean :showPhone
       t.boolean :showFriends
       

@@ -19,8 +19,6 @@ class Friend < ActiveRecord::Base
     end
   end
   
-  scope :accepted, -> { where(:accepted => true) }
-  
   validates :user_1, :match => {
     :message => 'Zaten arkadaşsınız'
   }, :own => {
