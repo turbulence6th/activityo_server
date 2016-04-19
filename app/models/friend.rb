@@ -25,7 +25,7 @@ class Friend < ActiveRecord::Base
     :message => 'Kendinizi arkadaş olarak ekleyemezsiniz'
   }, :presence => {
     :message => 'User_1 eksik!'
-  }
+  }, :on => :create
   
   validates :user_2, :presence => {
     :message => 'User_2 eksik!'

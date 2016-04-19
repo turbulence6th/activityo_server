@@ -56,4 +56,16 @@ Rails.application.routes.draw do
     :format => :json
   }
   
+  post 'acceptRequest' => 'users#acceptRequest', :defaults => {
+    :format => :json
+  }
+  
+  post 'deleteRequest' => 'users#deleteRequest', :defaults => {
+    :format => :json
+  }
+  
+  post 'cancelRequest' => 'users#cancelRequest', :defaults => {
+    :format => :json
+  }
+  
 end

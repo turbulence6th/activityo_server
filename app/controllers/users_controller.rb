@@ -131,9 +131,9 @@ class UsersController < ApplicationController
        @user.id, user.id, user.id, @user.id)
       if !friendUser
         friendStatus = 0
-      elsif !friendUser.accepted && friendUser.user_1 == @user
+      elsif !friendUser.accepted && friendUser.user_1_id == @user.id
         friendStatus = 1
-      elsif !friendUser.accepted && friendUser.user_1 == user
+      elsif !friendUser.accepted && friendUser.user_1_id == user.id
         friendStatus = 2
       else
         friendStatus = 3
@@ -146,13 +146,17 @@ class UsersController < ApplicationController
       execute("select users.name, comments.text, comments.created_at from users, comments where users.id=comments.from_id and comments.to_id=#{user.id}")
     
     friends = user.friends
-    puts friendStatus
+    friendsResponse = []
+    friends.each do |friend|
+      friendsResponse << friend.as_json.merge!(:image => URI.join(request.url, 
+        friend.get_image.imagefile.url).to_s )
+    end
     
     respond_to do |format|
       format.json { render :json => {:user => user, 
         :events => events, 
         :comments => comments, 
-        :friends => friends,
+        :friends => friendsResponse,
         :image => URI.join(request.url, user.get_image.imagefile.url).to_s,
         :friendStatus => friendStatus } }
     end
@@ -203,6 +207,49 @@ class UsersController < ApplicationController
     end
   end
   
-
+  def acceptRequest
+    friendUser = User.find_by(:id => params[:user_id])
+    friend = Friend.find_by(:user_1 => friendUser, :user_2 => @user, :accepted => false)
+    if friend
+      friend.update_attributes(:accepted => true)
+      respond_to do |format|
+        format.json { render :json => { :success => true } }
+      end
+    else
+      respond_to do |format|
+        format.json { render :json => { :success => false } }
+      end
+    end
+  end
+  
+  def deleteRequest
+    friendUser = User.find_by(:id => params[:user_id])
+    friend = Friend.find_by(:user_1 => friendUser, :user_2 => @user, :accepted => false)
+    if friend
+      friend.destroy
+      respond_to do |format|
+        format.json { render :json => { :success => true } }
+      end
+    else
+      respond_to do |format|
+        format.json { render :json => { :success => false } }
+      end
+    end
+  end
+  
+  def cancelRequest
+    friendUser = User.find_by(:id => params[:user_id])
+    friend = Friend.find_by(:user_1 => @user, :user_2 => friendUser, :accepted => false)
+    if friend
+      friend.destroy
+      respond_to do |format|
+        format.json { render :json => { :success => true } }
+      end
+    else
+      respond_to do |format|
+        format.json { render :json => { :success => false } }
+      end
+    end
+  end
   
 end
