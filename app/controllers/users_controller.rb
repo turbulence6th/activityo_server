@@ -123,20 +123,20 @@ class UsersController < ApplicationController
   
   def getUserInfo
     
-    if !params[:user_id] || params[:user_id] == ""
+    if !params[:user_id] || @user.id.to_s == params[:user_id]
       user = @user
     else
       user = User.find_by(:id => params[:user_id])
       friendUser = Friend.find_by('(user_1_id=? AND user_2_id=?) OR (user_1_id=? AND user_2_id=?)',
        @user.id, user.id, user.id, @user.id)
       if !friendUser
-        friendStatus = 0
-      elsif !friendUser.accepted && friendUser.user_1_id == @user.id
         friendStatus = 1
-      elsif !friendUser.accepted && friendUser.user_1_id == user.id
+      elsif !friendUser.accepted && friendUser.user_1_id == @user.id
         friendStatus = 2
-      else
+      elsif !friendUser.accepted && friendUser.user_1_id == user.id
         friendStatus = 3
+      else
+        friendStatus = 4
       end
     end
     
