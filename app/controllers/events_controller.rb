@@ -29,9 +29,16 @@ class EventsController < ApplicationController
   
   def showEvent
     event = Event.find_by(:id => params[:id])
-    user = event.user
+    createrUser = event.user
+    joinUsers = User.select('users.*').from('users, joins')
+      .where('joins.event_id=? AND joins.user_id=users.id AND joins.allowed=true', event.id)
+    joinUsersResponse = []
+    joinUsers.each do |user|
+      joinUsersResponse << user.as_json.merge!(:image => URI.join(request.url, 
+        user.get_image.imagefile.url).to_s )
+    end
     respond_to do |format|
-      format.json { render :json => { :event => event, :user => user } }
+      format.json { render :json => { :event => event, :user => createrUser, :joinUsers => joinUsersResponse } }
     end
   end
   
