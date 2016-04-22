@@ -47,7 +47,6 @@ class Event < ActiveRecord::Base
   
   has_many :message_receive, :class_name => 'Message',:as => :to, :dependent => :destroy
   
-  geocoded_by :address
-  after_validation :geocode
+  reverse_geocoded_by :latitude, :longitude
   
 end
