@@ -11,7 +11,7 @@ class UsersController < ApplicationController
       session = Session.new(:auth_token => SecureRandom.uuid, :onesignal_token => params[:onesignal_token])
       user.sessions << session
       respond_to do |format|
-        format.json { render :json => { :auth_token => session.auth_token } }
+        format.json { render :json => { :auth_token => session.auth_token, :user_id => user.id } }
       end
     elsif userParams['id']
       education = userParams['education'][-1]['school']['name'] if userParams['education']
@@ -27,7 +27,7 @@ class UsersController < ApplicationController
       user.sessions << session
   
       respond_to do |format|
-        format.json { render :json => { :auth_token => session.auth_token } }
+        format.json { render :json => { :auth_token => session.auth_token, :user_id => user.id } }
       end 
          
       thread = Thread.new do
