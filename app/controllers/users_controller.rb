@@ -105,10 +105,15 @@ class UsersController < ApplicationController
   
   def getmessages
     users = User.select("users.id, users.name").from('users, messages')
-        .where('(messages.to_id=? AND messages.from_id=users.id) OR (messages.from_id=? AND messages.to_id=users.id)', 
+        .where("((messages.to_id=? AND messages.from_id=users.id) OR (messages.from_id=? AND messages.to_id=users.id)) AND (messages.to_type='User')", 
         @user.id, @user.id).distinct
+    usersResponse = []
+    users.each do |user|
+      usersResponse << user.as_json.merge!(:image => URI.join(request.url, 
+        user.get_image.imagefile.url).to_s )
+    end
     respond_to do |format|
-      format.json { render :json => { :userList => users } }
+      format.json { render :json => { :userList => usersResponse } }
     end
   end
   
