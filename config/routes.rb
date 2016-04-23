@@ -68,4 +68,16 @@ Rails.application.routes.draw do
     :format => :json
   }
   
+  post 'joinEvent' => 'events#joinEvent', :defaults => {
+    :format => :json
+  }
+  
+  post 'withdrawRequest' => 'events#withdrawRequest', :defaults => {
+    :format => :json
+  }
+  
+  post 'friendRequestUsers' => 'users#friendRequestUsers', :defaults => {
+    :format => :json
+  }
+  
 end

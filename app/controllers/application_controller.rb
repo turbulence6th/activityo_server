@@ -14,14 +14,82 @@ class ApplicationController < ActionController::Base
     @user = @session.user
   end
   
-  def send_notification(user, message)
+  def send_notification_message_user(user, message)
     tokens = user.sessions.pluck(:onesignal_token)
     params = {"app_id" => "77e650eb-05ea-4214-acd9-ef9caf45cb06", 
       "contents" => {"en" => user.name + " : " + message.text},
       "include_player_ids" => tokens,
       "android_group" => message.from_id,
       "data" => {"message" => message},
-      "large_icon" => URI.join(request.url, @user.get_image.imagefile.url).to_s }
+      "large_icon" => URI.join(request.url, user.get_image.imagefile.url).to_s }
+    uri = URI.parse('https://onesignal.com/api/v1/notifications')
+    http = Net::HTTP.new(uri.host, uri.port)
+    http.use_ssl = true
+    
+    request = Net::HTTP::Post.new(uri.path,
+                                  'Content-Type'  => 'application/json',
+                                  'Authorization' => "Basic NjI2NmU4ZWUtMzk3Mi00YjA1LWJkOTMtNWM4ZTM3YmI5YTZi")
+    request.body = params.as_json.to_json
+    response = http.request(request) 
+  end
+  
+  def send_notification_request(user, event)
+    tokens = user.sessions.pluck(:onesignal_token)
+    params = {"app_id" => "77e650eb-05ea-4214-acd9-ef9caf45cb06", 
+      "contents" => {"en" => "#{user.name} adlı kişi #{event.name} adlı etkinliğinize katılmak istiyor"},
+      "include_player_ids" => tokens,
+      "large_icon" => URI.join(request.url, user.get_image.imagefile.url).to_s }
+    uri = URI.parse('https://onesignal.com/api/v1/notifications')
+    http = Net::HTTP.new(uri.host, uri.port)
+    http.use_ssl = true
+    
+    request = Net::HTTP::Post.new(uri.path,
+                                  'Content-Type'  => 'application/json',
+                                  'Authorization' => "Basic NjI2NmU4ZWUtMzk3Mi00YjA1LWJkOTMtNWM4ZTM3YmI5YTZi")
+    request.body = params.as_json.to_json
+    response = http.request(request) 
+  end
+  
+  def send_notification_accept_request(user, event)
+    tokens = user.sessions.pluck(:onesignal_token)
+    params = {"app_id" => "77e650eb-05ea-4214-acd9-ef9caf45cb06", 
+      "contents" => {"en" => "#{event.name} adlı etkinliğe katılma isteğiniz onaylandı"},
+      "include_player_ids" => tokens,
+      "large_icon" => URI.join(request.url, user.get_image.imagefile.url).to_s }
+    uri = URI.parse('https://onesignal.com/api/v1/notifications')
+    http = Net::HTTP.new(uri.host, uri.port)
+    http.use_ssl = true
+    
+    request = Net::HTTP::Post.new(uri.path,
+                                  'Content-Type'  => 'application/json',
+                                  'Authorization' => "Basic NjI2NmU4ZWUtMzk3Mi00YjA1LWJkOTMtNWM4ZTM3YmI5YTZi")
+    request.body = params.as_json.to_json
+    response = http.request(request) 
+  end
+  
+  def send_notification_add_friend(user)
+    tokens = user.sessions.pluck(:onesignal_token)
+    params = {"app_id" => "77e650eb-05ea-4214-acd9-ef9caf45cb06", 
+      "contents" => {"en" => "#{@user.name} adlı kullanıcı sizinle arkadaş olmak istiyor"},
+      "include_player_ids" => tokens,
+      "large_icon" => URI.join(request.url, user.get_image.imagefile.url).to_s }
+    uri = URI.parse('https://onesignal.com/api/v1/notifications')
+    http = Net::HTTP.new(uri.host, uri.port)
+    http.use_ssl = true
+    
+    request = Net::HTTP::Post.new(uri.path,
+                                  'Content-Type'  => 'application/json',
+                                  'Authorization' => "Basic NjI2NmU4ZWUtMzk3Mi00YjA1LWJkOTMtNWM4ZTM3YmI5YTZi")
+    request.body = params.as_json.to_json
+    response = http.request(request) 
+  end
+  
+  def send_notification_accept_friend(user)
+    tokens = user.sessions.pluck(:onesignal_token)
+    params = {"app_id" => "77e650eb-05ea-4214-acd9-ef9caf45cb06", 
+      "contents" => {"en" => "#{@user.name} adlı kullanıcı arkadaşlık isteğinizi kabul etti"},
+      "include_player_ids" => tokens,
+      "large_icon" => URI.join(request.url, user.get_image.imagefile.url).to_s }
     uri = URI.parse('https://onesignal.com/api/v1/notifications')
     http = Net::HTTP.new(uri.host, uri.port)
     http.use_ssl = true

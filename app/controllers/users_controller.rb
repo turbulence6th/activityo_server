@@ -97,7 +97,7 @@ class UsersController < ApplicationController
     user_receiver = User.find_by(:id => params[:id])
     message = Message.new(:to => user_receiver, :text => params[:text])
     @user.message_send << message
-    puts send_notification(user_receiver, message).body
+    send_notification_message_user(user_receiver, message)
     respond_to do |format|
       format.json { render :json => { :message => message } }
     end
@@ -164,20 +164,14 @@ class UsersController < ApplicationController
   end
   
   def SendComment
-    
     commentText = params[:text]
     id = params[:id]
-    
     comment = Comment.new(:from => @user,:to => id,:text => commentText)
-    
     comment.save
-    
     success = true
-    
     respond_to do |format|
       format.json { render :json => success  }
     end
-    
   end
   
   def findUser
@@ -197,6 +191,7 @@ class UsersController < ApplicationController
     friendUser = User.find_by(:id => params[:user_id])
     friend = Friend.new(:user_1 => @user, :user_2 => friendUser, :accepted => false)
     if friend.save
+      send_notification_add_friend(friendUser)
       respond_to do |format|
         format.json { render :json => { :success => true } }
       end
@@ -212,6 +207,7 @@ class UsersController < ApplicationController
     friend = Friend.find_by(:user_1 => friendUser, :user_2 => @user, :accepted => false)
     if friend
       friend.update_attributes(:accepted => true)
+      send_notification_accept_friend(friendUser)
       respond_to do |format|
         format.json { render :json => { :success => true } }
       end
@@ -250,6 +246,19 @@ class UsersController < ApplicationController
         format.json { render :json => { :success => false } }
       end
     end
+  end
+  
+  def friendRequestUsers
+    users = User.from('friends, users')
+      .where('friends.user_2_id=? AND friends.accepted=false AND users.id=friends.user_1_id', @user.id)
+    usersResponse = []
+    users.each do |user|
+      usersResponse << user.as_json.merge!(:image => URI.join(request.url, 
+        user.get_image.imagefile.url).to_s )
+    end
+    respond_to do |format|
+        format.json { render :json => { :friendRequestUsers => usersResponse } }
+     end
   end
   
 end
