@@ -36,7 +36,7 @@ class ApplicationController < ActionController::Base
   def send_notification_request(user, event)
     tokens = user.sessions.pluck(:onesignal_token)
     params = {"app_id" => "77e650eb-05ea-4214-acd9-ef9caf45cb06", 
-      "contents" => {"en" => "#{user.name} adlı kişi #{event.name} adlı etkinliğinize katılmak istiyor"},
+      "contents" => {"en" => "#{user.name} adlı kullanıcı #{event.name} adlı etkinliğinize katılmak istiyor"},
       "include_player_ids" => tokens,
       "large_icon" => URI.join(request.url, user.get_image.imagefile.url).to_s }
     uri = URI.parse('https://onesignal.com/api/v1/notifications')

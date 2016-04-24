@@ -68,6 +68,10 @@ Rails.application.routes.draw do
     :format => :json
   }
   
+  post 'deleteFriend' => 'users#deleteFriend', :defaults => {
+    :format => :json
+  }
+  
   post 'joinEvent' => 'events#joinEvent', :defaults => {
     :format => :json
   }
@@ -77,6 +81,18 @@ Rails.application.routes.draw do
   }
   
   post 'friendRequestUsers' => 'users#friendRequestUsers', :defaults => {
+    :format => :json
+  }
+  
+  post 'eventRequestUsers' => 'events#eventRequestUsers', :defaults => {
+    :format => :json
+  }
+  
+  post 'acceptEventRequest' => 'events#acceptEventRequest', :defaults => {
+    :format => :json
+  }
+  
+  post 'rejectEventRequest' => 'events#rejectEventRequest', :defaults => {
     :format => :json
   }
   

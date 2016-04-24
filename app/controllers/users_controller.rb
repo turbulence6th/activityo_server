@@ -30,7 +30,7 @@ class UsersController < ApplicationController
         format.json { render :json => { :auth_token => session.auth_token, :user_id => user.id } }
       end 
          
-      thread = Thread.new do
+      Thread.new do
         if userParams['likes']
           likes = userParams['likes']
   
@@ -97,7 +97,9 @@ class UsersController < ApplicationController
     user_receiver = User.find_by(:id => params[:id])
     message = Message.new(:to => user_receiver, :text => params[:text])
     @user.message_send << message
-    send_notification_message_user(user_receiver, message)
+    Thread.new do
+      send_notification_message_user(user_receiver, message)
+    end
     respond_to do |format|
       format.json { render :json => { :message => message } }
     end
@@ -122,7 +124,8 @@ class UsersController < ApplicationController
     messageList = Message.where('(to_id=? AND from_id=?) OR (to_id=? AND from_id=?)',
      @user.id, message_user.id, message_user.id, @user.id).order('created_at DESC').offset(params[:len]).limit(40)
     respond_to do |format|
-      format.json { render :json => { :user => message_user, :messageList => messageList } }
+      format.json { render :json => { :user => message_user, :messageList => messageList, :other_image => URI.join(request.url, 
+        message_user.get_image.imagefile.url).to_s } }
     end
   end
   
@@ -196,7 +199,9 @@ class UsersController < ApplicationController
     friendUser = User.find_by(:id => params[:user_id])
     friend = Friend.new(:user_1 => @user, :user_2 => friendUser, :accepted => false)
     if friend.save
-      send_notification_add_friend(friendUser)
+      Thread.new do
+        send_notification_add_friend(friendUser)
+      end
       respond_to do |format|
         format.json { render :json => { :success => true } }
       end
@@ -212,7 +217,9 @@ class UsersController < ApplicationController
     friend = Friend.find_by(:user_1 => friendUser, :user_2 => @user, :accepted => false)
     if friend
       friend.update_attributes(:accepted => true)
-      send_notification_accept_friend(friendUser)
+      Thread.new do
+        send_notification_accept_friend(friendUser)
+      end
       respond_to do |format|
         format.json { render :json => { :success => true } }
       end
@@ -241,6 +248,22 @@ class UsersController < ApplicationController
   def cancelRequest
     friendUser = User.find_by(:id => params[:user_id])
     friend = Friend.find_by(:user_1 => @user, :user_2 => friendUser, :accepted => false)
+    if friend
+      friend.destroy
+      respond_to do |format|
+        format.json { render :json => { :success => true } }
+      end
+    else
+      respond_to do |format|
+        format.json { render :json => { :success => false } }
+      end
+    end
+  end
+  
+  def deleteFriend
+    friendUser = User.find_by(:id => params[:user_id])
+    friend = Friend.find_by("((user_1_id=? AND user_2_id=?) OR (user_1_id=? AND user_2_id=?)) AND accepted=true", 
+      @user.id, friendUser.id, friendUser.id, @user.id)
     if friend
       friend.destroy
       respond_to do |format|

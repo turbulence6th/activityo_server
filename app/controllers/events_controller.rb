@@ -63,7 +63,9 @@ class EventsController < ApplicationController
     event = Event.find_by(:id => params[:event_id])
     join = Join.new(:event => event, :user => @user, :allowed => false)
     if join.save
-      send_notification_request(event.user, event)
+      Thread.new do
+        send_notification_request(event.user, event)
+      end
       respond_to do |format|
         format.json { render :json => { :success => true } }
       end
@@ -89,13 +91,15 @@ class EventsController < ApplicationController
     end
   end
   
-  def acceptRequest
-    event = Event.find_by(:id => params[:event_id])
+  def acceptEventRequest
+    event = Event.find_by(:id => params[:event_id], :user => @user)
     user = User.find_by(:id => params[:user_id])
-    join = Join.find_by(:event => event, :user => user)
+    join = Join.find_by(:event => event, :user => user, :allowed => false)
     if join
       join.update_attributes(:allowed => true)
-      send_notification_accept_request(user, event)
+      Thread.new do
+        send_notification_accept_request(user, event)
+      end
       respond_to do |format|
         format.json { render :json => { :success => true } }
       end
@@ -103,6 +107,40 @@ class EventsController < ApplicationController
       respond_to do |format|
         format.json { render :json => { :success => false } }
       end
+    end
+  end
+  
+  def rejectEventRequest
+    event = Event.find_by(:id => params[:event_id], :user => @user)
+    user = User.find_by(:id => params[:user_id])
+    join = Join.find_by(:event => event, :user => user, :allowed => false)
+    if join
+      join.destroy
+      respond_to do |format|
+        format.json { render :json => { :success => true } }
+      end
+    else
+      respond_to do |format|
+        format.json { render :json => { :success => false } }
+      end
+    end
+  end
+  
+  def eventRequestUsers
+    userEvent= ActiveRecord::Base.connection.
+      execute("select users.id as user_id, users.name as user_name, " + 
+      "events.id as event_id, events.name as event_name from joins, users, events " +
+      "where events.user_id=#{@user.id} AND joins.event_id=events.id AND joins.user_id=users.id " + 
+      "AND joins.allowed=false")
+    userEventResponse = []
+    userEvent.each_with_index do |row, index|
+      image = Image.find_by(:imageable_id => row['user_id'], 
+        :imageable_type => 'User') || Image.new
+      userEventResponse << row.merge!(:image => URI.join(request.url, 
+        image.imagefile.url).to_s, :index => index)
+    end
+    respond_to do |format|
+      format.json { render :json => { :eventRequestUsers => userEventResponse } }
     end
   end
   
