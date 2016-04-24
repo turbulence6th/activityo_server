@@ -67,7 +67,7 @@ class UsersController < ApplicationController
       session = Session.new(:auth_token => SecureRandom.uuid, :onesignal_token => params[:onesignal_token])
       user.sessions << session
       respond_to do |format|
-        format.json { render :json => { :auth_token => session.auth_token } }
+        format.json { render :json => { :auth_token => session.auth_token, :user_id => user.id } }
       end
     elsif userParams['id']
       user = User.create(:name => userParams['displayName'], :email => userParams['emails'][0]['value'], :gender => userParams['gender'],
@@ -77,7 +77,7 @@ class UsersController < ApplicationController
       session = Session.new(:auth_token => SecureRandom.uuid, :onesignal_token => params[:onesignal_token])
       user.sessions << session
       respond_to do |format|
-        format.json { render :json => { :auth_token => session.auth_token } }
+        format.json { render :json => { :auth_token => session.auth_token, :user_id => user.id } }
       end
     else
       respond_to do |format|
