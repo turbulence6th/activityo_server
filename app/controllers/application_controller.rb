@@ -34,13 +34,12 @@ class ApplicationController < ActionController::Base
     response = http.request(request) 
   end
   
-  #Arkadaş Olarak Ekle
+  #Etkinliğe Kullanıcı Ekleme İsteği
   def send_notification_request(user, event)
     tokens = user.sessions.pluck(:onesignal_token)
     params = {"app_id" => "77e650eb-05ea-4214-acd9-ef9caf45cb06", 
       "contents" => {"en" => "#{user.name} adlı kullanıcı #{event.name} adlı etkinliğinize katılmak istiyor"},
       "include_player_ids" => tokens,
-      "data" => {"friend_request" => true},
       "large_icon" => URI.join(request.url, @user.get_image.imagefile.url).to_s }
     uri = URI.parse('https://onesignal.com/api/v1/notifications')
     http = Net::HTTP.new(uri.host, uri.port)
@@ -53,7 +52,7 @@ class ApplicationController < ActionController::Base
     response = http.request(request) 
   end
   
-  #Arkadaş Olarak Ekle Onay
+  #Etkinliğe Kullanıcı Ekleme Onayı
   def send_notification_accept_request(user, event)
     tokens = user.sessions.pluck(:onesignal_token)
     params = {"app_id" => "77e650eb-05ea-4214-acd9-ef9caf45cb06", 
@@ -71,11 +70,13 @@ class ApplicationController < ActionController::Base
     response = http.request(request) 
   end
   
+  #Arkadaş Olarak Ekleme İsteği
   def send_notification_add_friend(user)
     tokens = user.sessions.pluck(:onesignal_token)
     params = {"app_id" => "77e650eb-05ea-4214-acd9-ef9caf45cb06", 
       "contents" => {"en" => "#{@user.name} adlı kullanıcı sizinle arkadaş olmak istiyor"},
       "include_player_ids" => tokens,
+      "data" => {"friend_request" => true},
       "large_icon" => URI.join(request.url, @user.get_image.imagefile.url).to_s }
     uri = URI.parse('https://onesignal.com/api/v1/notifications')
     http = Net::HTTP.new(uri.host, uri.port)
@@ -88,6 +89,7 @@ class ApplicationController < ActionController::Base
     response = http.request(request) 
   end
   
+  #Arkadaş Olarak Ekleme Onayı
   def send_notification_accept_friend(user)
     tokens = user.sessions.pluck(:onesignal_token)
     params = {"app_id" => "77e650eb-05ea-4214-acd9-ef9caf45cb06", 
