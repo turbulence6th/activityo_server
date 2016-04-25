@@ -14,6 +14,7 @@ class ApplicationController < ActionController::Base
     @user = @session.user
   end
   
+  #Kullanıcıya mesaj gönder
   def send_notification_message_user(user, message)
     tokens = user.sessions.pluck(:onesignal_token)
     params = {"app_id" => "77e650eb-05ea-4214-acd9-ef9caf45cb06", 
@@ -21,7 +22,7 @@ class ApplicationController < ActionController::Base
       "include_player_ids" => tokens,
       "android_group" => message.from_id,
       "data" => {"message" => message},
-      "large_icon" => URI.join(request.url, user.get_image.imagefile.url).to_s }
+      "large_icon" => URI.join(request.url, @user.get_image.imagefile.url).to_s }
     uri = URI.parse('https://onesignal.com/api/v1/notifications')
     http = Net::HTTP.new(uri.host, uri.port)
     http.use_ssl = true
@@ -33,12 +34,14 @@ class ApplicationController < ActionController::Base
     response = http.request(request) 
   end
   
+  #Arkadaş Olarak Ekle
   def send_notification_request(user, event)
     tokens = user.sessions.pluck(:onesignal_token)
     params = {"app_id" => "77e650eb-05ea-4214-acd9-ef9caf45cb06", 
       "contents" => {"en" => "#{user.name} adlı kullanıcı #{event.name} adlı etkinliğinize katılmak istiyor"},
       "include_player_ids" => tokens,
-      "large_icon" => URI.join(request.url, user.get_image.imagefile.url).to_s }
+      "data" => {"friend_request" => true},
+      "large_icon" => URI.join(request.url, @user.get_image.imagefile.url).to_s }
     uri = URI.parse('https://onesignal.com/api/v1/notifications')
     http = Net::HTTP.new(uri.host, uri.port)
     http.use_ssl = true
@@ -50,12 +53,13 @@ class ApplicationController < ActionController::Base
     response = http.request(request) 
   end
   
+  #Arkadaş Olarak Ekle Onay
   def send_notification_accept_request(user, event)
     tokens = user.sessions.pluck(:onesignal_token)
     params = {"app_id" => "77e650eb-05ea-4214-acd9-ef9caf45cb06", 
       "contents" => {"en" => "#{event.name} adlı etkinliğe katılma isteğiniz onaylandı"},
       "include_player_ids" => tokens,
-      "large_icon" => URI.join(request.url, user.get_image.imagefile.url).to_s }
+      "large_icon" => URI.join(request.url, @user.get_image.imagefile.url).to_s }
     uri = URI.parse('https://onesignal.com/api/v1/notifications')
     http = Net::HTTP.new(uri.host, uri.port)
     http.use_ssl = true
@@ -72,7 +76,7 @@ class ApplicationController < ActionController::Base
     params = {"app_id" => "77e650eb-05ea-4214-acd9-ef9caf45cb06", 
       "contents" => {"en" => "#{@user.name} adlı kullanıcı sizinle arkadaş olmak istiyor"},
       "include_player_ids" => tokens,
-      "large_icon" => URI.join(request.url, user.get_image.imagefile.url).to_s }
+      "large_icon" => URI.join(request.url, @user.get_image.imagefile.url).to_s }
     uri = URI.parse('https://onesignal.com/api/v1/notifications')
     http = Net::HTTP.new(uri.host, uri.port)
     http.use_ssl = true
@@ -89,7 +93,7 @@ class ApplicationController < ActionController::Base
     params = {"app_id" => "77e650eb-05ea-4214-acd9-ef9caf45cb06", 
       "contents" => {"en" => "#{@user.name} adlı kullanıcı arkadaşlık isteğinizi kabul etti"},
       "include_player_ids" => tokens,
-      "large_icon" => URI.join(request.url, user.get_image.imagefile.url).to_s }
+      "large_icon" => URI.join(request.url, @user.get_image.imagefile.url).to_s }
     uri = URI.parse('https://onesignal.com/api/v1/notifications')
     http = Net::HTTP.new(uri.host, uri.port)
     http.use_ssl = true
