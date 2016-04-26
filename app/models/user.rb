@@ -14,6 +14,9 @@ class User < ActiveRecord::Base
   has_many :user_1, :class_name => 'Friend', :foreign_key => 'user_1_id', :dependent => :destroy 
   has_many :user_2, :class_name => 'Friend', :foreign_key => 'user_2_id', :dependent => :destroy
   
+  has_many :referenced, :class_name => 'Reference', :foreign_key => 'from_id', :dependent => :destroy 
+  has_many :be_referenced, :class_name => 'Reference', :foreign_key => 'to_id', :dependent => :destroy
+  
   has_one :image, :as => :imageable, :dependent => :destroy
   
   has_many :joins, :dependent => :destroy

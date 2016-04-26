@@ -44,7 +44,7 @@ Rails.application.routes.draw do
      :format => :json
   }
   
-  post 'sendComment' => 'users#SendComment', :defaults => {
+  post 'beReference' => 'users#beReference', :defaults => {
      :format => :json
   }
   
@@ -93,6 +93,18 @@ Rails.application.routes.draw do
   }
   
   post 'rejectEventRequest' => 'events#rejectEventRequest', :defaults => {
+    :format => :json
+  }
+  
+  post 'getUserEvents' => 'users#getUserEvents', :defaults => {
+    :format => :json
+  }
+  
+  post 'getBasicInfo' => 'users#getBasicInfo', :defaults => {
+    :format => :json
+  }
+  
+  get 'callback' => 'users#callback', :defaults => {
     :format => :json
   }
   

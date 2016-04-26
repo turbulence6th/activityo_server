@@ -38,6 +38,7 @@ class EventsController < ApplicationController
     createrUser = event.user
     joinUsers = User.select('users.*').from('users, joins')
       .where('joins.event_id=? AND joins.user_id=users.id AND joins.allowed=true', event.id)
+      .order('RANDOM()').limit(10)
     joinUsersResponse = []
     joinUsers.each do |user|
       joinUsersResponse << user.as_json.merge!(:image => URI.join(request.url, 
