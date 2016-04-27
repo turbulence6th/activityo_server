@@ -69,8 +69,8 @@ class UsersController < ApplicationController
     user = User.find_by(:googleID => userParams['id'])
     
     if user
-      Session.where(:onesignal_token => params[:onesignal_token]).destroy_all
-      session = Session.new(:auth_token => SecureRandom.uuid, :onesignal_token => params[:onesignal_token])
+      Session.where(:gcmId => params[:gcmId]).destroy_all
+      session = Session.new(:auth_token => SecureRandom.uuid, :gcmId => params[:gcmId])
       user.sessions << session
       respond_to do |format|
         format.json { render :json => { :auth_token => session.auth_token, :user_id => user.id } }
@@ -80,7 +80,7 @@ class UsersController < ApplicationController
         :birthday => userParams['birthday'], :role => 'member', :googleID => userParams['id'],
         :deleted => false)
       Session.where(:onesignal_token => params[:onesignal_token]).destroy_all
-      session = Session.new(:auth_token => SecureRandom.uuid, :onesignal_token => params[:onesignal_token])
+      session = Session.new(:auth_token => SecureRandom.uuid, :gcmId => params[:gcmId])
       user.sessions << session
       respond_to do |format|
         format.json { render :json => { :auth_token => session.auth_token, :user_id => user.id } }
