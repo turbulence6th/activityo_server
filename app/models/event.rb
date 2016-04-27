@@ -22,7 +22,7 @@ class Event < ActiveRecord::Base
   validates :address, :presence => {
     :message => 'Adres giriniz!'
   }, :length => {
-    :maximum => 80,
+    :maximum => 200,
     :message => 'Adres karakter sayısı en fazla 80 olabilir!'
   }
   

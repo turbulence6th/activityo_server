@@ -11,21 +11,10 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20160411001001) do
+ActiveRecord::Schema.define(version: 20160425181858) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
-
-  create_table "comments", force: :cascade do |t|
-    t.integer  "from_id"
-    t.integer  "to_id"
-    t.string   "text"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-  end
-
-  add_index "comments", ["from_id"], name: "index_comments_on_from_id", using: :btree
-  add_index "comments", ["to_id"], name: "index_comments_on_to_id", using: :btree
 
   create_table "events", force: :cascade do |t|
     t.integer  "user_id"
@@ -40,6 +29,8 @@ ActiveRecord::Schema.define(version: 20160411001001) do
     t.datetime "created_at",  null: false
     t.datetime "updated_at",  null: false
   end
+
+  add_index "events", ["user_id"], name: "index_events_on_user_id", using: :btree
 
   create_table "friends", force: :cascade do |t|
     t.integer  "user_1_id"
@@ -66,7 +57,6 @@ ActiveRecord::Schema.define(version: 20160411001001) do
   create_table "joins", force: :cascade do |t|
     t.integer "event_id"
     t.integer "user_id"
-    t.boolean "waiting"
     t.boolean "allowed"
   end
 
@@ -100,16 +90,26 @@ ActiveRecord::Schema.define(version: 20160411001001) do
   add_index "messages", ["from_id"], name: "index_messages_on_from_id", using: :btree
   add_index "messages", ["to_type", "to_id"], name: "index_messages_on_to_type_and_to_id", using: :btree
 
+  create_table "references", force: :cascade do |t|
+    t.integer  "from_id"
+    t.integer  "to_id"
+    t.string   "text"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
+
+  add_index "references", ["from_id"], name: "index_references_on_from_id", using: :btree
+  add_index "references", ["to_id"], name: "index_references_on_to_id", using: :btree
+
   create_table "sessions", force: :cascade do |t|
     t.integer  "user_id"
     t.uuid     "auth_token"
-    t.uuid     "onesignal_token"
-    t.datetime "created_at",      null: false
-    t.datetime "updated_at",      null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.string   "gcmId"
   end
 
   add_index "sessions", ["auth_token"], name: "index_sessions_on_auth_token", using: :btree
-  add_index "sessions", ["onesignal_token"], name: "index_sessions_on_onesignal_token", using: :btree
   add_index "sessions", ["user_id"], name: "index_sessions_on_user_id", using: :btree
 
   create_table "users", force: :cascade do |t|
@@ -123,17 +123,14 @@ ActiveRecord::Schema.define(version: 20160411001001) do
     t.text     "description"
     t.string   "facebookID"
     t.string   "googleID"
-    t.string   "twitterID"
-    t.boolean  "notification"
     t.boolean  "showPhone"
     t.boolean  "showFriends"
     t.boolean  "deleted"
-    t.datetime "created_at",   null: false
-    t.datetime "updated_at",   null: false
+    t.datetime "created_at",  null: false
+    t.datetime "updated_at",  null: false
   end
 
   add_index "users", ["facebookID"], name: "index_users_on_facebookID", using: :btree
   add_index "users", ["googleID"], name: "index_users_on_googleID", using: :btree
-  add_index "users", ["twitterID"], name: "index_users_on_twitterID", using: :btree
 
 end

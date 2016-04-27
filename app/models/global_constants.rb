@@ -13,6 +13,6 @@ module GlobalConstants
     now.year - birthday.year - (birthday.to_date.change(:year => now.year) > now ? 1 : 0)
   end
   
-  EVENT_TYPES = ['Eğlence', 'Hobi', 'Gezi & Seyahat', 'Konser & Sanat', 'Yeme & İçme', 'Ders & Okuma' ]
+  EVENT_TYPES = ['Eğlence', 'Hobi', 'Gezi & Seyahat', 'Konser & Sanat', 'Yeme & İçme', 'Ders & Okuma', 'Spor' ]
   
 end
