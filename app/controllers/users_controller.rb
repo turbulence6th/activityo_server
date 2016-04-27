@@ -228,7 +228,7 @@ class UsersController < ApplicationController
       .order('created_at desc').limit(3)
    
     references = ActiveRecord::Base.connection.
-      execute("select users.id, users.name, #{'"references"'}.* from users, #{'"references"'} " +
+      execute("select users.id, users.name, #{'"references"'}.text, #{'"references"'}.created_at from users, #{'"references"'} " +
        "where users.id=#{'"references"'}.from_id and #{'"references"'}.to_id=#{user.id} " + 
        "order by #{'"references"'}.created_at desc limit 3")
     referencesResponse = []
