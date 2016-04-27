@@ -30,6 +30,8 @@ ActiveRecord::Schema.define(version: 20160425181858) do
     t.datetime "updated_at",  null: false
   end
 
+  add_index "events", ["user_id"], name: "index_events_on_user_id", using: :btree
+
   create_table "friends", force: :cascade do |t|
     t.integer  "user_1_id"
     t.integer  "user_2_id"

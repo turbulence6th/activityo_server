@@ -21,9 +21,27 @@ class ApplicationController < ActionController::Base
   def send_notification_message_user(user, message)
     tokens = user.sessions.pluck(:gcmId)
     params = {"registration_ids" => tokens, 
-      "data" => {"message" => message.text, "user_message" => message,
-      "icon" => URI.join(request.url, @user.get_image.imagefile.url).to_s,
-      "title" => @user.name} }
+      "data" => {"message" => message['text'], "user_message" => message,
+        "title" => @user.name} }
+    uri = URI.parse('https://gcm-http.googleapis.com/gcm/send')
+    http = Net::HTTP.new(uri.host, uri.port)
+    http.use_ssl = true
+    
+    request = Net::HTTP::Post.new(uri.path,
+                                  'Content-Type'  => 'application/json',
+                                  'Authorization' => "key=AIzaSyCvGYE6wdKe7Fo0yQpY0BBLIbdYgWkItrc")
+    request.body = params.as_json.to_json
+    response = http.request(request) 
+  end
+  
+  #Etkinlik Chat Mesajı
+  def send_notification_message_event(event, message)
+    tokens = Session.from('joins, sessions')
+      .where('joins.event_id=? AND joins.allowed=true AND joins.user_id!=? AND joins.user_id=sessions.user_id',
+      event.id, message['from_id']).pluck(:gcmId)
+    params = {"registration_ids" => tokens, 
+      "data" => {"message" => message['text'], "user_message" => message,
+        "title" => event.name} }
     uri = URI.parse('https://gcm-http.googleapis.com/gcm/send')
     http = Net::HTTP.new(uri.host, uri.port)
     http.use_ssl = true
@@ -40,9 +58,8 @@ class ApplicationController < ActionController::Base
     tokens = user.sessions.pluck(:gcmId)
     params = {"registration_ids" => tokens,
       "data" => {"message" => "#{@user.name} adlı kullanıcı #{event.name} adlı etkinliğinize katılmak istiyor", 
-      "event_request" => true, 
-      "title" => "Etkinlik Katılma İsteği"},
-      "large_icon" => URI.join(request.url, @user.get_image.imagefile.url).to_s }
+        "event_request" => true, 
+        "title" => "Etkinlik Katılma İsteği"} }
     uri = URI.parse('https://gcm-http.googleapis.com/gcm/send')
     http = Net::HTTP.new(uri.host, uri.port)
     http.use_ssl = true

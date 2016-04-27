@@ -100,38 +100,107 @@ class UsersController < ApplicationController
   end
   
   def send_message
-    user_receiver = User.find_by(:id => params[:id])
-    message = Message.new(:to => user_receiver, :text => params[:text])
-    @user.message_send << message
-    Thread.new do
-      send_notification_message_user(user_receiver, message).body
+    type = params['type']
+    if type == 'User'
+      receiver = User.find_by(:id => params[:id])
+      message = Message.new(:to => receiver, :text => params[:text])
+      @user.message_send << message
+      message = message.as_json.merge!(:image => URI.join(request.url, 
+          @user.get_image.imagefile.url).to_s, :name => @user.name)
+      Thread.new do
+        send_notification_message_user(receiver, message)
+      end
+    elsif type == 'Event'
+      receiver = Event.find_by(:id => params[:id])
+      if Join.exists?(:event => receiver, :user => @user, :allowed => true)
+        message = Message.new(:to => receiver, :text => params[:text])
+        @user.message_send << message
+        message = message.as_json.merge!(:image => URI.join(request.url, 
+            @user.get_image.imagefile.url).to_s, :name => @user.name )
+        Thread.new do
+          send_notification_message_event(receiver, message)
+        end
+      end
     end
+  
     respond_to do |format|
       format.json { render :json => { :message => message } }
     end
   end
   
   def getmessages
-    users = User.select("users.id, users.name").from('users, messages')
-        .where("((messages.to_id=? AND messages.from_id=users.id) OR (messages.from_id=? AND messages.to_id=users.id)) AND (messages.to_type='User')", 
-        @user.id, @user.id).group('users.id').order('max(messages.created_at) desc')
-    usersResponse = []
-    users.each do |user|
-      usersResponse << user.as_json.merge!(:image => URI.join(request.url, 
-        user.get_image.imagefile.url).to_s )
-    end
+    messages = ActiveRecord::Base.connection.
+      execute("SELECT message.sender_id, message.to_type as type, message.name, " +
+        "MAX(message.created_at) as created_at FROM (SELECT messages.to_id as sender_id, " +
+        "messages.to_type, events.name, messages.created_at FROM messages, joins, events " +
+        "WHERE messages.to_type='Event' AND messages.to_id=events.id AND " +
+        "events.id=joins.event_id AND joins.user_id=#{@user.id} AND joins.allowed=true UNION " +
+        "SELECT messages.from_id as sender_id, messages.to_type, users.name, messages.created_at " +
+        "FROM messages, users WHERE messages.to_type='User' AND messages.from_id=users.id AND " +
+        "messages.to_id=#{@user.id} UNION SELECT messages.to_id as sender_id, messages.to_type, "+
+        "users.name, messages.created_at FROM messages, users WHERE messages.to_type='User' " + 
+        "AND messages.from_id=#{@user.id} AND messages.to_id=users.id) as message " +
+        "GROUP BY message.sender_id, message.to_type, message.name ORDER BY created_at DESC")
+        
+    messagesResponse = []
+    messages.each do |m|
+      if m['type'] == 'User'
+        image = Image.find_by(:imageable_id => m['sender_id'], 
+          :imageable_type => 'User') || Image.new
+        messagesResponse << m.as_json.merge!(:image => URI.join(request.url, 
+          image.imagefile.url).to_s )
+      else
+        messagesResponse << m.as_json.merge!(:image => 
+          Event.find_by(:id => m['sender_id']).eventType )
+      end
+    end  
+    
     respond_to do |format|
-      format.json { render :json => { :userList => usersResponse } }
+      format.json { render :json => { :messages => messagesResponse } }
     end
   end
   
   def showMessage
-    message_user = User.select('users.id, users.name').find_by(:id => params[:id])
-    messageList = Message.where('(to_id=? AND from_id=?) OR (to_id=? AND from_id=?)',
-     @user.id, message_user.id, message_user.id, @user.id).order('created_at DESC').offset(params[:len]).limit(40)
+    begin
+      Integer(params[:id])
+      Integer(params[:len])
+    rescue
+      return
+    end
+    type = params[:type]
+    if type == 'User'
+      user = User.find_by(:id => params[:id])
+      messageList = ActiveRecord::Base.connection.
+        execute("SELECT messages.*, users.id as user_id, users.name " +
+          "FROM messages, users " +
+          "WHERE messages.to_type='User' AND users.id=messages.from_id AND ((messages.from_id=#{user.id} AND " + 
+          "messages.to_id=#{@user.id}) OR (messages.from_id=#{@user.id} AND " + 
+          "messages.to_id=#{user.id})) ORDER BY messages.created_at DESC " +
+          "OFFSET #{params[:len]} LIMIT 20")
+    elsif type == 'Event'
+      event = Event.find_by(:id => params[:id])
+      if Join.exists?(:event => event, :user => @user, :allowed => true)
+        messageList = ActiveRecord::Base.connection.
+          execute("SELECT messages.*, users.id as user_id, users.name " + 
+            "FROM messages, users " + 
+            "WHERE users.id=messages.from_id AND " +
+              "messages.to_type='Event' AND " +
+              "messages.to_id=#{params[:id]} " +
+              "ORDER BY messages.created_at DESC " +
+              "OFFSET #{params[:len]} LIMIT 20")
+      end
+    end
+    
+    responseMessageList = []
+    messageList.each do |m|
+      image = Image.find_by(:imageable_id => m['user_id'], 
+        :imageable_type => 'User') || Image.new
+      responseMessageList << m.as_json.merge!("image" => URI.join(request.url, 
+        image.imagefile.url).to_s )
+    end
+    
     respond_to do |format|
-      format.json { render :json => { :user => message_user, :messageList => messageList, :other_image => URI.join(request.url, 
-        message_user.get_image.imagefile.url).to_s } }
+      format.json { render :json => { :user => @user, :messageList => responseMessageList } }
     end
   end
   
