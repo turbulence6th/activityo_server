@@ -23,10 +23,7 @@ class ApplicationController < ActionController::Base
     params = {"registration_ids" => tokens, 
       "data" => {"message" => message['text'], "user_message" => message,
         "title" => @user.name},
-        "notification" => {
-          "body" => "great match!",
-      "title" => "Portugal vs. Denmark"
-        } }
+      "collapse_key" => message['id'] }
     uri = URI.parse('https://gcm-http.googleapis.com/gcm/send')
     http = Net::HTTP.new(uri.host, uri.port)
     http.use_ssl = true
