@@ -22,8 +22,7 @@ class ApplicationController < ActionController::Base
     tokens = user.sessions.pluck(:gcmId)
     params = {"registration_ids" => tokens, 
       "data" => {"message" => message['text'], "user_message" => message,
-        "title" => @user.name},
-       "collapse_key" => SecureRandom.uuid }
+        "title" => @user.name} }
     uri = URI.parse('https://gcm-http.googleapis.com/gcm/send')
     http = Net::HTTP.new(uri.host, uri.port)
     http.use_ssl = true
