@@ -148,15 +148,10 @@ class UsersController < ApplicationController
         
     messagesResponse = []
     messages.each do |m|
-      if m['type'] == 'User'
-        image = Image.find_by(:imageable_id => m['sender_id'], 
-          :imageable_type => 'User') || Image.new
-        messagesResponse << m.as_json.merge!(:image => URI.join(request.url, 
-          image.imagefile.url).to_s )
-      else
-        messagesResponse << m.as_json.merge!(:image => 
-          Event.find_by(:id => m['sender_id']).eventType )
-      end
+      image = Image.find_by(:imageable_id => m['sender_id'], 
+        :imageable_type => 'User') || Image.new
+      messagesResponse << m.as_json.merge!(:image => URI.join(request.url, 
+        image.imagefile.url).to_s )
     end  
     
     respond_to do |format|
