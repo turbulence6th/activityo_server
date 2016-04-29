@@ -2,7 +2,7 @@ class EventsController < ApplicationController
   
   def getEvents
     events = Event.near([params[:lat], params[:long]], params[:distance], :order => "distance")
-        .offset(params[:len]).limit(10)
+        .offset(params[:len]).limit(12)
     eventTypes = params[:eventTypes]
     eventTypeParams = []
     eventTypes.each do |type|
@@ -13,14 +13,24 @@ class EventsController < ApplicationController
     events = events.where(:eventType => eventTypeParams)
     events = events.where("name ILIKE ?", "%#{params[:eventName]}%")
     
+    eventsResponse = []
+    events.each do |e|
+      image = Image.find_by(:imageable_id => e.user_id, 
+        :imageable_type => 'User') || Image.new
+      eventsResponse << e.as_json.merge!(:image => URI.join(request.url, 
+        image.imagefile.url).to_s )
+    end
+    
     respond_to do |format|
-      format.json { render :json => { :events => events } }
+      format.json { render :json => { :events => eventsResponse } }
     end
   end
   
   def createEvent
     event = Event.new(event_params)
     event.user = @user
+    event.startDate = event.startDate - 3.hours
+    
     if event.save
       Join.create(:event => event, :user => @user, :allowed => true)
       respond_to do |format|

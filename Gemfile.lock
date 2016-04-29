@@ -90,6 +90,8 @@ GEM
       mimemagic (= 0.3.0)
     pg (0.18.4)
     rack (1.6.4)
+    rack-attack (4.3.0)
+      rack
     rack-cors (0.4.0)
     rack-test (0.6.3)
       rack (>= 1.0)
@@ -171,6 +173,7 @@ DEPENDENCIES
   jquery-rails
   paperclip (~> 4.3)
   pg
+  rack-attack
   rack-cors
   rails (= 4.2.4)
   sass-rails (~> 5.0)

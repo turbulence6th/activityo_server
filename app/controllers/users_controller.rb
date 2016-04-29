@@ -13,8 +13,9 @@ class UsersController < ApplicationController
     user = User.find_by(:facebookID => userParams['id'])
     
     if user
-      Session.where(:gcmId => params[:gcmId]).destroy_all
-      session = Session.new(:auth_token => SecureRandom.uuid, :gcmId => params[:gcmId])
+      Session.where(:deviceId => params[:deviceId]).destroy_all
+      session = Session.new(:auth_token => SecureRandom.uuid, :pushToken => params[:pushToken],
+       :deviceId => params[:deviceId], :deviceType => params[:deviceType])
       user.sessions << session
       respond_to do |format|
         format.json { render :json => { :auth_token => session.auth_token } }
@@ -28,8 +29,9 @@ class UsersController < ApplicationController
       imageUrl = "https://graph.facebook.com/#{userParams['id']}/picture?height=400&width=400"
       user.image = Image.new(:imagefile => URI.parse(imageUrl))
       
-      Session.where(:gcmId => params[:gcmId]).destroy_all
-      session = Session.new(:auth_token => SecureRandom.uuid, :gcmId => params[:gcmId])
+      Session.where(:deviceId => params[:deviceId]).destroy_all
+      session = Session.new(:auth_token => SecureRandom.uuid, :pushToken => params[:pushToken],
+       :deviceId => params[:deviceId], :deviceType => params[:deviceType])
       user.sessions << session
   
       respond_to do |format|
@@ -69,8 +71,9 @@ class UsersController < ApplicationController
     user = User.find_by(:googleID => userParams['id'])
     
     if user
-      Session.where(:gcmId => params[:gcmId]).destroy_all
-      session = Session.new(:auth_token => SecureRandom.uuid, :gcmId => params[:gcmId])
+      Session.where(:deviceId => params[:deviceId]).destroy_all
+      session = Session.new(:auth_token => SecureRandom.uuid, :pushToken => params[:pushToken],
+       :deviceId => params[:deviceId], :deviceType => params[:deviceType])
       user.sessions << session
       respond_to do |format|
         format.json { render :json => { :auth_token => session.auth_token} }
@@ -79,8 +82,9 @@ class UsersController < ApplicationController
       user = User.create(:name => userParams['displayName'], :email => userParams['emails'][0]['value'], :gender => userParams['gender'],
         :birthday => userParams['birthday'], :role => 'member', :googleID => userParams['id'],
         :deleted => false)
-      Session.where(:onesignal_token => params[:onesignal_token]).destroy_all
-      session = Session.new(:auth_token => SecureRandom.uuid, :gcmId => params[:gcmId])
+      Session.where(:deviceId => params[:deviceId]).destroy_all
+      session = Session.new(:auth_token => SecureRandom.uuid, :pushToken => params[:pushToken],
+       :deviceId => params[:deviceId], :deviceType => params[:deviceType])
       user.sessions << session
       respond_to do |format|
         format.json { render :json => { :auth_token => session.auth_token } }
@@ -108,7 +112,7 @@ class UsersController < ApplicationController
       message = message.as_json.merge!(:image => URI.join(request.url, 
           @user.get_image.imagefile.url).to_s, :name => @user.name)
       Thread.new do
-        send_notification_message_user(receiver, message)
+        send_notification_message_user(receiver, message).body
       end
     elsif type == 'Event'
       receiver = Event.find_by(:id => params[:id])

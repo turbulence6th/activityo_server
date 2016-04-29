@@ -2,8 +2,8 @@ class Session < ActiveRecord::Base
   
   belongs_to :user
   
-  validates :auth_token, :presence => true
+  validates :auth_token, :deviceId, :deviceType, :pushToken, :presence => true
   
-  validates :gcmId, :presence => true
+  enum :deviceType => [:android, :ios]
   
 end

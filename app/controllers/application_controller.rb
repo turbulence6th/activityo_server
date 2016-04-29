@@ -19,10 +19,11 @@ class ApplicationController < ActionController::Base
   
   #Kullanıcıya mesaj gönder
   def send_notification_message_user(user, message)
-    tokens = user.sessions.pluck(:gcmId)
+    tokens = user.sessions.where(:deviceType => Session.deviceTypes[:android]).pluck(:pushToken)
     params = {"registration_ids" => tokens, 
       "data" => {"message" => message['text'], "user_message" => message,
-        "title" => @user.name} }
+        "title" => @user.name}
+    }
     uri = URI.parse('https://gcm-http.googleapis.com/gcm/send')
     http = Net::HTTP.new(uri.host, uri.port)
     http.use_ssl = true
@@ -37,11 +38,14 @@ class ApplicationController < ActionController::Base
   #Etkinlik Chat Mesajı
   def send_notification_message_event(event, message)
     tokens = Session.from('joins, sessions')
-      .where('joins.event_id=? AND joins.allowed=true AND joins.user_id!=? AND joins.user_id=sessions.user_id',
-      event.id, message['from_id']).pluck(:gcmId)
+      .where("joins.event_id=? AND joins.allowed=true AND joins.user_id!=? AND " + 
+        "joins.user_id=sessions.user_id", 
+        event.id, message['from_id']).where(:deviceType => Session.deviceTypes[:android]).pluck(:pushToken) 
     params = {"registration_ids" => tokens, 
       "data" => {"message" => message['text'], "user_message" => message,
-        "title" => event.name} }
+        "title" => event.name
+       } 
+    }
     uri = URI.parse('https://gcm-http.googleapis.com/gcm/send')
     http = Net::HTTP.new(uri.host, uri.port)
     http.use_ssl = true
@@ -55,11 +59,13 @@ class ApplicationController < ActionController::Base
   
   #Etkinliğe Kullanıcı Ekleme İsteği
   def send_notification_request(user, event)
-    tokens = user.sessions.pluck(:gcmId)
+    tokens = user.sessions.where(:deviceType => Session.deviceTypes[:android]).pluck(:pushToken)
     params = {"registration_ids" => tokens,
       "data" => {"message" => "#{@user.name} adlı kullanıcı #{event.name} adlı etkinliğinize katılmak istiyor", 
         "event_request" => true, 
-        "title" => "Etkinlik Katılma İsteği"} }
+        "title" => "Etkinlik Katılma İsteği"
+      } 
+    }
     uri = URI.parse('https://gcm-http.googleapis.com/gcm/send')
     http = Net::HTTP.new(uri.host, uri.port)
     http.use_ssl = true
@@ -73,11 +79,12 @@ class ApplicationController < ActionController::Base
   
   #Etkinliğe Kullanıcı Ekleme Onayı
   def send_notification_accept_request(user, event)
-    tokens = user.sessions.pluck(:gcmId)
+    tokens = user.sessions.where(:deviceType => Session.deviceTypes[:android]).pluck(:pushToken)
     params = {"registration_ids" => tokens, 
       "data" => {"message" => "#{event.name} adlı etkinliğe katılma isteğiniz onaylandı",
-      "title" => "Etkinlik Katılma Onayı"},
-      "large_icon" => URI.join(request.url, @user.get_image.imagefile.url).to_s }
+        "title" => "Etkinlik Katılma Onayı"
+      }
+    }
     uri = URI.parse('https://gcm-http.googleapis.com/gcm/send')
     http = Net::HTTP.new(uri.host, uri.port)
     http.use_ssl = true
@@ -91,12 +98,13 @@ class ApplicationController < ActionController::Base
   
   #Arkadaş Olarak Ekleme İsteği
   def send_notification_add_friend(user)
-    tokens = user.sessions.pluck(:gcmId)
+    tokens = user.sessions.where(:deviceType => Session.deviceTypes[:android]).pluck(:pushToken)
     params = {"registration_ids" => tokens,  
       "data" => {"message" => "#{@user.name} adlı kullanıcı sizinle arkadaş olmak istiyor", 
-      "friend_request" => true,
-      "title" => "Arkadaşlık İsteği"},
-      "large_icon" => URI.join(request.url, @user.get_image.imagefile.url).to_s }
+        "friend_request" => true,
+        "title" => "Arkadaşlık İsteği"
+      } 
+    }
     uri = URI.parse('https://gcm-http.googleapis.com/gcm/send')
     http = Net::HTTP.new(uri.host, uri.port)
     http.use_ssl = true
@@ -110,11 +118,12 @@ class ApplicationController < ActionController::Base
   
   #Arkadaş Olarak Ekleme Onayı
   def send_notification_accept_friend(user)
-    tokens = user.sessions.pluck(:gcmId)
+    tokens = user.sessions.where(:deviceType => Session.deviceTypes[:android]).pluck(:pushToken)
     params = {"registration_ids" => tokens, 
       "data" => {"message" => "#{@user.name} adlı kullanıcı arkadaşlık isteğinizi kabul etti",
-      "title" => "Arkadaşlık Onayı"},
-      "large_icon" => URI.join(request.url, @user.get_image.imagefile.url).to_s }
+        "title" => "Arkadaşlık Onayı"
+      }
+    }
     uri = URI.parse('https://gcm-http.googleapis.com/gcm/send')
     http = Net::HTTP.new(uri.host, uri.port)
     http.use_ssl = true
