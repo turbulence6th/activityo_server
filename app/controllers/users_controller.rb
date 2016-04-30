@@ -135,7 +135,7 @@ class UsersController < ApplicationController
   def getmessages
     messages = ActiveRecord::Base.connection.
       execute("SELECT message.sender_id, message.to_type as type, message.name, " +
-        "MAX(message.created_at) as created_at FROM (SELECT messages.from_id as sender_id, " +
+        "MAX(message.created_at) as created_at FROM (SELECT messages.to_id as sender_id, " +
         "messages.to_type, events.name, messages.created_at FROM messages, joins, events " +
         "WHERE messages.to_type='Event' AND messages.to_id=events.id AND " +
         "events.id=joins.event_id AND joins.user_id=#{@user.id} AND joins.allowed=true UNION " +
@@ -148,10 +148,15 @@ class UsersController < ApplicationController
         
     messagesResponse = []
     messages.each do |m|
-      image = Image.find_by(:imageable_id => m['sender_id'], 
-        :imageable_type => 'User') || Image.new
-      messagesResponse << m.as_json.merge!(:image => URI.join(request.url, 
-        image.imagefile.url).to_s )
+      if m['type'] == 'User'
+        image = Image.find_by(:imageable_id => m['sender_id'], 
+          :imageable_type => 'User') || Image.new
+        messagesResponse << m.as_json.merge!(:image => URI.join(request.url, 
+          image.imagefile.url).to_s )
+      else
+        messagesResponse << m.as_json.merge!(:image => 
+          Event.find_by(:id => m['sender_id']).eventType )
+      end
     end  
     
     respond_to do |format|
