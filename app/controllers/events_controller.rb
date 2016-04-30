@@ -6,7 +6,7 @@ class EventsController < ApplicationController
     eventTypes = params[:eventTypes]
     eventTypeParams = []
     eventTypes.each do |type|
-      if type['checked'] == 'true'
+      if type['checked'] == 'true' || type['checked'] == true
         eventTypeParams << Event.eventTypes[type['value']]
       end
     end
