@@ -29,7 +29,6 @@ class EventsController < ApplicationController
   def createEvent
     event = Event.new(event_params)
     event.user = @user
-    event.startDate = event.startDate - 3.hours
     
     if event.save
       Join.create(:event => event, :user => @user, :allowed => true)

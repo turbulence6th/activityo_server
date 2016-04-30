@@ -17,5 +17,7 @@ module Liyo
       end
     end
     config.middleware.use Rack::Attack
+    config.time_zone = 'Turkey'
+    config.active_record.default_timezone = :local
   end
 end
