@@ -135,7 +135,7 @@ class UsersController < ApplicationController
   def getmessages
     messages = ActiveRecord::Base.connection.
       execute("SELECT message.sender_id, message.to_type as type, message.name, " +
-        "MAX(message.created_at) as created_at FROM (SELECT messages.to_id as sender_id, " +
+        "MAX(message.created_at) as created_at FROM (SELECT messages.from_id as sender_id, " +
         "messages.to_type, events.name, messages.created_at FROM messages, joins, events " +
         "WHERE messages.to_type='Event' AND messages.to_id=events.id AND " +
         "events.id=joins.event_id AND joins.user_id=#{@user.id} AND joins.allowed=true UNION " +
