@@ -6,7 +6,7 @@ class EventsController < ApplicationController
     eventTypes = params[:eventTypes]
     eventTypeParams = []
     eventTypes.each do |type|
-      if type['checked'] == 'true' || type['checked'] == true
+      if type['checked'] == true
         eventTypeParams << Event.eventTypes[type['value']]
       end
     end
@@ -91,6 +91,9 @@ class EventsController < ApplicationController
     join = Join.find_by(:event => event, :user => @user)
     if join
       join.destroy
+      Thread.new do
+        send_notification_withdraw(event.user, event)
+      end
       respond_to do |format|
         format.json { render :json => { :success => true } }
       end
@@ -151,6 +154,20 @@ class EventsController < ApplicationController
     end
     respond_to do |format|
       format.json { render :json => { :eventRequestUsers => userEventResponse } }
+    end
+  end
+  
+  def deleteEvent
+    event = Event.find_by(:id => params[:id], :user => @user)
+    if event
+      event.destroy
+      respond_to do |format|
+        format.json { render :json => { :success => true } }
+      end
+    else
+      respond_to do |format|
+        format.json { render :json => { :success => false } }
+      end
     end
   end
   

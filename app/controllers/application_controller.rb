@@ -17,13 +17,7 @@ class ApplicationController < ActionController::Base
     @user = @session.user
   end
   
-  #Kullanıcıya mesaj gönder
-  def send_notification_message_user(user, message)
-    tokens = user.sessions.where(:deviceType => Session.deviceTypes[:android]).pluck(:pushToken)
-    params = {"registration_ids" => tokens, 
-      "data" => {"message" => message['text'], "user_message" => message,
-        "title" => @user.name}
-    }
+  def gcmPushNotification(params)
     uri = URI.parse('https://gcm-http.googleapis.com/gcm/send')
     http = Net::HTTP.new(uri.host, uri.port)
     http.use_ssl = true
@@ -33,6 +27,16 @@ class ApplicationController < ActionController::Base
                                   'Authorization' => "key=AIzaSyCvGYE6wdKe7Fo0yQpY0BBLIbdYgWkItrc")
     request.body = params.as_json.to_json
     response = http.request(request) 
+  end
+  
+  #Kullanıcıya mesaj gönder
+  def send_notification_message_user(user, message)
+    tokens = user.sessions.where(:deviceType => Session.deviceTypes[:android]).pluck(:pushToken)
+    params = {"registration_ids" => tokens, 
+      "data" => {"message" => message['text'], "user_message" => message,
+        "title" => @user.name}
+    }
+    gcmPushNotification(params)
   end
   
   #Etkinlik Chat Mesajı
@@ -46,15 +50,7 @@ class ApplicationController < ActionController::Base
         "title" => event.name
        } 
     }
-    uri = URI.parse('https://gcm-http.googleapis.com/gcm/send')
-    http = Net::HTTP.new(uri.host, uri.port)
-    http.use_ssl = true
-    
-    request = Net::HTTP::Post.new(uri.path,
-                                  'Content-Type'  => 'application/json',
-                                  'Authorization' => "key=AIzaSyCvGYE6wdKe7Fo0yQpY0BBLIbdYgWkItrc")
-    request.body = params.as_json.to_json
-    response = http.request(request) 
+    gcmPushNotification(params)
   end
   
   #Etkinliğe Kullanıcı Ekleme İsteği
@@ -66,15 +62,18 @@ class ApplicationController < ActionController::Base
         "title" => "Etkinlik Katılma İsteği"
       } 
     }
-    uri = URI.parse('https://gcm-http.googleapis.com/gcm/send')
-    http = Net::HTTP.new(uri.host, uri.port)
-    http.use_ssl = true
-    
-    request = Net::HTTP::Post.new(uri.path,
-                                  'Content-Type'  => 'application/json',
-                                  'Authorization' => "key=AIzaSyCvGYE6wdKe7Fo0yQpY0BBLIbdYgWkItrc")
-    request.body = params.as_json.to_json
-    response = http.request(request) 
+    gcmPushNotification(params)
+  end
+  
+  #Etkinlik Kullanıcı İptal
+  def send_notification_withdraw(user, event)
+    tokens = user.sessions.where(:deviceType => Session.deviceTypes[:android]).pluck(:pushToken)
+    params = {"registration_ids" => tokens,
+      "data" => { 
+        "event_request" => true
+      } 
+    }
+    gcmPushNotification(params)
   end
   
   #Etkinliğe Kullanıcı Ekleme Onayı
@@ -85,54 +84,41 @@ class ApplicationController < ActionController::Base
         "title" => "Etkinlik Katılma Onayı"
       }
     }
-    uri = URI.parse('https://gcm-http.googleapis.com/gcm/send')
-    http = Net::HTTP.new(uri.host, uri.port)
-    http.use_ssl = true
-    
-    request = Net::HTTP::Post.new(uri.path,
-                                  'Content-Type'  => 'application/json',
-                                  'Authorization' => "key=AIzaSyCvGYE6wdKe7Fo0yQpY0BBLIbdYgWkItrc")
-    request.body = params.as_json.to_json
-    response = http.request(request) 
+    gcmPushNotification(params)
   end
   
-  #Arkadaş Olarak Ekleme İsteği
-  def send_notification_add_friend(user)
+  #Takip Olarak Ekleme İsteği
+  def send_notification_follow_user(user)
     tokens = user.sessions.where(:deviceType => Session.deviceTypes[:android]).pluck(:pushToken)
     params = {"registration_ids" => tokens,  
-      "data" => {"message" => "#{@user.name} adlı kullanıcı sizinle arkadaş olmak istiyor", 
-        "friend_request" => true,
-        "title" => "Arkadaşlık İsteği"
+      "data" => {"message" => "#{@user.name} adlı kullanıcı sizi takip etmek istiyor", 
+        "follow_request" => true,
+        "title" => "Takip İsteği"
       } 
     }
-    uri = URI.parse('https://gcm-http.googleapis.com/gcm/send')
-    http = Net::HTTP.new(uri.host, uri.port)
-    http.use_ssl = true
-    
-    request = Net::HTTP::Post.new(uri.path,
-                                  'Content-Type'  => 'application/json',
-                                  'Authorization' => "key=AIzaSyCvGYE6wdKe7Fo0yQpY0BBLIbdYgWkItrc")
-    request.body = params.as_json.to_json
-    response = http.request(request) 
+    gcmPushNotification(params)
   end
   
-  #Arkadaş Olarak Ekleme Onayı
-  def send_notification_accept_friend(user)
+  #Takip İptal
+  def send_notification_cancel_follow(user)
+    tokens = user.sessions.where(:deviceType => Session.deviceTypes[:android]).pluck(:pushToken)
+    params = {"registration_ids" => tokens,  
+      "data" => {
+        "follow_request" => true
+      } 
+    }
+    gcmPushNotification(params)
+  end
+  
+  #Takip Olarak Ekleme Onayı
+  def send_notification_accept_follow(user)
     tokens = user.sessions.where(:deviceType => Session.deviceTypes[:android]).pluck(:pushToken)
     params = {"registration_ids" => tokens, 
-      "data" => {"message" => "#{@user.name} adlı kullanıcı arkadaşlık isteğinizi kabul etti",
-        "title" => "Arkadaşlık Onayı"
+      "data" => {"message" => "#{@user.name} adlı kullanıcı takip etme isteğinizi onayladı",
+        "title" => "Takip Onayı"
       }
     }
-    uri = URI.parse('https://gcm-http.googleapis.com/gcm/send')
-    http = Net::HTTP.new(uri.host, uri.port)
-    http.use_ssl = true
-    
-    request = Net::HTTP::Post.new(uri.path,
-                                  'Content-Type'  => 'application/json',
-                                  'Authorization' => "key=AIzaSyCvGYE6wdKe7Fo0yQpY0BBLIbdYgWkItrc")
-    request.body = params.as_json.to_json
-    response = http.request(request) 
+    gcmPushNotification(params)
   end
   
 end

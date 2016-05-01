@@ -5,14 +5,14 @@ class Event < ActiveRecord::Base
   }
   
   validates :eventType, :presence => {
-    :message => 'Etkinlik türü seçiniz!'
+    :message => 'Aktivite türü seçiniz!'
   }
   
   validates :name, :presence => {
-    :message => 'Etkinlik adı giriniz!'
+    :message => 'Aktivite adı giriniz!'
   }, :length => {
     :maximum => 30,
-    :message => 'Etkinlik adı karakter sayısı en fazla 30 olabilir!'
+    :message => 'Aktivite adı karakter sayısı en fazla 30 olabilir!'
   }
   
   validates :startDate, :presence => {
@@ -23,7 +23,7 @@ class Event < ActiveRecord::Base
     :message => 'Adres giriniz!'
   }, :length => {
     :maximum => 200,
-    :message => 'Adres karakter sayısı en fazla 80 olabilir!'
+    :message => 'Adres karakter sayısı en fazla 200 olabilir!'
   }
   
   validates :capacity, :numericality => {

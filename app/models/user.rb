@@ -11,8 +11,8 @@ class User < ActiveRecord::Base
   has_many :message_send, :class_name => 'Message', :foreign_key => 'from_id', :dependent => :destroy
   has_many :message_receive, :class_name => 'Message',:as => :to, :dependent => :destroy
   
-  has_many :user_1, :class_name => 'Friend', :foreign_key => 'user_1_id', :dependent => :destroy 
-  has_many :user_2, :class_name => 'Friend', :foreign_key => 'user_2_id', :dependent => :destroy
+  has_many :user_1, :class_name => 'Follow', :foreign_key => 'user_1_id', :dependent => :destroy 
+  has_many :user_2, :class_name => 'Follow', :foreign_key => 'user_2_id', :dependent => :destroy
   
   has_many :referenced, :class_name => 'Reference', :foreign_key => 'from_id', :dependent => :destroy 
   has_many :be_referenced, :class_name => 'Reference', :foreign_key => 'to_id', :dependent => :destroy

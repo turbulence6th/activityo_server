@@ -112,7 +112,7 @@ class UsersController < ApplicationController
       message = message.as_json.merge!(:image => URI.join(request.url, 
           @user.get_image.imagefile.url).to_s, :name => @user.name)
       Thread.new do
-        send_notification_message_user(receiver, message).body
+        send_notification_message_user(receiver, message)
       end
     elsif type == 'Event'
       receiver = Event.find_by(:id => params[:id])
@@ -214,16 +214,13 @@ class UsersController < ApplicationController
       user = @user
     else
       user = User.find_by(:id => params[:user_id])
-      friendUser = Friend.find_by('(user_1_id=? AND user_2_id=?) OR (user_1_id=? AND user_2_id=?)',
-       @user.id, user.id, user.id, @user.id)
-      if !friendUser
-        friendStatus = 1
-      elsif !friendUser.accepted && friendUser.user_1_id == @user.id
-        friendStatus = 2
-      elsif !friendUser.accepted && friendUser.user_1_id == user.id
-        friendStatus = 3
+      followUser = Follow.find_by(:user_1 => @user, :user_2 => user)
+      if !followUser
+        followStatus = 1
+      elsif !followUser.accepted
+        followStatus = 2
       else
-        friendStatus = 4
+        followStatus = 3
       end
       referenced = Reference.exists?(:from => @user, :to => user)
     end
@@ -243,20 +240,21 @@ class UsersController < ApplicationController
         image.imagefile.url).to_s )
     end
     
-    friends = user.friends.order('RANDOM()').limit(10)
-    friendsResponse = []
-    friends.each do |friend|
-      friendsResponse << friend.as_json.merge!(:image => URI.join(request.url, 
-        friend.get_image.imagefile.url).to_s )
+    follows = User.from("users, follows").where("follows.user_2_id=? AND follows.user_1_id=users.id", user.id)
+      .order('RANDOM()').limit(10)
+    followsResponse = []
+    follows.each do |follow|
+      followsResponse << follow.as_json.merge!(:image => URI.join(request.url, 
+        follow.get_image.imagefile.url).to_s )
     end
     
     respond_to do |format|
       format.json { render :json => {:user => user, 
         :events => events, 
         :references => referencesResponse, 
-        :friends => friendsResponse,
+        :follows => followsResponse,
         :image => URI.join(request.url, user.get_image.imagefile.url).to_s,
-        :friendStatus => friendStatus,
+        :followStatus => followStatus,
         :referenced => referenced } }
     end
 
@@ -300,30 +298,30 @@ class UsersController < ApplicationController
     end
   end
   
-  def addFriend
-    friendUser = User.find_by(:id => params[:user_id])
-    friend = Friend.new(:user_1 => @user, :user_2 => friendUser, :accepted => false)
-    if friend.save
+  def followUser
+    followUser = User.find_by(:id => params[:user_id])
+    follow = Follow.new(:user_1 => @user, :user_2 => followUser, :accepted => false)
+    if follow.save
       Thread.new do
-        send_notification_add_friend(friendUser)
+        send_notification_follow_user(followUser)
       end
       respond_to do |format|
         format.json { render :json => { :success => true } }
       end
     else
       respond_to do |format|
-        format.json { render :json => { :success => false, :errors => friend.errors } }
+        format.json { render :json => { :success => false } }
       end
     end
   end
   
   def acceptRequest
-    friendUser = User.find_by(:id => params[:user_id])
-    friend = Friend.find_by(:user_1 => friendUser, :user_2 => @user, :accepted => false)
-    if friend
-      friend.update_attributes(:accepted => true)
+    followUser = User.find_by(:id => params[:user_id])
+    follow = Follow.find_by(:user_1 => followUser, :user_2 => @user, :accepted => false)
+    if follow
+      follow.update_attributes(:accepted => true)
       Thread.new do
-        send_notification_accept_friend(friendUser)
+        send_notification_accept_follow(followUser)
       end
       respond_to do |format|
         format.json { render :json => { :success => true } }
@@ -336,10 +334,10 @@ class UsersController < ApplicationController
   end
   
   def deleteRequest
-    friendUser = User.find_by(:id => params[:user_id])
-    friend = Friend.find_by(:user_1 => friendUser, :user_2 => @user, :accepted => false)
-    if friend
-      friend.destroy
+    followUser = User.find_by(:id => params[:user_id])
+    follow = Follow.find_by(:user_1 => followUser, :user_2 => @user, :accepted => false)
+    if follow
+      follow.destroy
       respond_to do |format|
         format.json { render :json => { :success => true } }
       end
@@ -351,10 +349,13 @@ class UsersController < ApplicationController
   end
   
   def cancelRequest
-    friendUser = User.find_by(:id => params[:user_id])
-    friend = Friend.find_by(:user_1 => @user, :user_2 => friendUser, :accepted => false)
-    if friend
-      friend.destroy
+    followUser = User.find_by(:id => params[:user_id])
+    follow = Follow.find_by(:user_1 => @user, :user_2 => followUser, :accepted => false)
+    if follow
+      follow.destroy
+      Thread.new do
+        send_notification_cancel_follow(followUser)
+      end
       respond_to do |format|
         format.json { render :json => { :success => true } }
       end
@@ -365,12 +366,11 @@ class UsersController < ApplicationController
     end
   end
   
-  def deleteFriend
-    friendUser = User.find_by(:id => params[:user_id])
-    friend = Friend.find_by("((user_1_id=? AND user_2_id=?) OR (user_1_id=? AND user_2_id=?)) AND accepted=true", 
-      @user.id, friendUser.id, friendUser.id, @user.id)
-    if friend
-      friend.destroy
+  def deleteFollow
+    followUser = User.find_by(:id => params[:user_id])
+    follow = Follow.find_by(:user_1 => @user, :user_2 => followUser)
+    if follow
+      follow.destroy
       respond_to do |format|
         format.json { render :json => { :success => true } }
       end
@@ -381,16 +381,16 @@ class UsersController < ApplicationController
     end
   end
   
-  def friendRequestUsers
-    users = User.from('friends, users')
-      .where('friends.user_2_id=? AND friends.accepted=false AND users.id=friends.user_1_id', @user.id)
+  def followRequestUsers
+    users = User.from('follows, users')
+      .where('follows.user_2_id=? AND follows.accepted=false AND users.id=follows.user_1_id', @user.id)
     usersResponse = []
     users.each do |user|
       usersResponse << user.as_json.merge!(:image => URI.join(request.url, 
         user.get_image.imagefile.url).to_s )
     end
     respond_to do |format|
-        format.json { render :json => { :friendRequestUsers => usersResponse } }
+        format.json { render :json => { :followRequestUsers => usersResponse } }
      end
   end
   

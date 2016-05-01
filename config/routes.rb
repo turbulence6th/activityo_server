@@ -52,7 +52,7 @@ Rails.application.routes.draw do
      :format => :json
   }
   
-  post 'addFriend' => 'users#addFriend', :defaults => {
+  post 'followUser' => 'users#followUser', :defaults => {
     :format => :json
   }
   
@@ -68,7 +68,7 @@ Rails.application.routes.draw do
     :format => :json
   }
   
-  post 'deleteFriend' => 'users#deleteFriend', :defaults => {
+  post 'deleteFollow' => 'users#deleteFollow', :defaults => {
     :format => :json
   }
   
@@ -80,7 +80,7 @@ Rails.application.routes.draw do
     :format => :json
   }
   
-  post 'friendRequestUsers' => 'users#friendRequestUsers', :defaults => {
+  post 'followRequestUsers' => 'users#followRequestUsers', :defaults => {
     :format => :json
   }
   
@@ -105,6 +105,10 @@ Rails.application.routes.draw do
   }
   
   get 'callback' => 'users#callback', :defaults => {
+    :format => :json
+  }
+  
+  post 'deleteEvent' => 'events#deleteEvent', :defaults => {
     :format => :json
   }
   

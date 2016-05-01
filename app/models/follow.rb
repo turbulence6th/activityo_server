@@ -1,14 +1,4 @@
-class Friend < ActiveRecord::Base
-  
-  #Zaten arkadaşsa
-  class MatchValidator < ActiveModel::EachValidator
-    def validate_each(record, attribute, value)
-      if Friend.exists?(:user_1 => record.user_1, :user_2 => record.user_2) ||
-        Friend.exists?(:user_1 => record.user_2, :user_2 => record.user_1)
-          record.errors[attribute] << options[:message]
-      end
-    end
-  end
+class Follow < ActiveRecord::Base
   
   #Kullanıcı kendisini ekleyemiyor
   class OwnValidator < ActiveModel::EachValidator
@@ -19,9 +9,7 @@ class Friend < ActiveRecord::Base
     end
   end
   
-  validates :user_1, :match => {
-    :message => 'Zaten arkadaşsınız'
-  }, :own => {
+  validates :user_1, :own => {
     :message => 'Kendinizi arkadaş olarak ekleyemezsiniz'
   }, :presence => {
     :message => 'User_1 eksik!'

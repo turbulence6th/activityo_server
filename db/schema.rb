@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20160428164247) do
+ActiveRecord::Schema.define(version: 20160430135942) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -32,7 +32,7 @@ ActiveRecord::Schema.define(version: 20160428164247) do
 
   add_index "events", ["user_id"], name: "index_events_on_user_id", using: :btree
 
-  create_table "friends", force: :cascade do |t|
+  create_table "follows", force: :cascade do |t|
     t.integer  "user_1_id"
     t.integer  "user_2_id"
     t.boolean  "accepted"
@@ -40,8 +40,8 @@ ActiveRecord::Schema.define(version: 20160428164247) do
     t.datetime "updated_at", null: false
   end
 
-  add_index "friends", ["user_1_id"], name: "index_friends_on_user_1_id", using: :btree
-  add_index "friends", ["user_2_id"], name: "index_friends_on_user_2_id", using: :btree
+  add_index "follows", ["user_1_id"], name: "index_follows_on_user_1_id", using: :btree
+  add_index "follows", ["user_2_id"], name: "index_follows_on_user_2_id", using: :btree
 
   create_table "images", force: :cascade do |t|
     t.integer  "imageable_id"
