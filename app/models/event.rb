@@ -11,8 +11,8 @@ class Event < ActiveRecord::Base
   validates :name, :presence => {
     :message => 'Aktivite adı giriniz!'
   }, :length => {
-    :maximum => 30,
-    :message => 'Aktivite adı karakter sayısı en fazla 30 olabilir!'
+    :maximum => 150,
+    :message => 'Aktivite adı karakter sayısı en fazla 150 olabilir!'
   }
   
   validates :startDate, :presence => {

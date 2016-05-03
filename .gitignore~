@@ -14,4 +14,3 @@
 *.class
 *.pyc
 *.pyo
-/public/image/*
