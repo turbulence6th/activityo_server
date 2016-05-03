@@ -240,7 +240,7 @@ class UsersController < ApplicationController
         image.imagefile.url).to_s )
     end
     
-    follows = User.from("users, follows").where("follows.user_2_id=? AND follows.user_1_id=users.id", user.id)
+    follows = User.from("users, follows").where("follows.user_2_id=? AND follows.user_1_id=users.id AND follows.accepted=true", user.id)
       .order('RANDOM()').limit(10)
     followsResponse = []
     follows.each do |follow|
