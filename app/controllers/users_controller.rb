@@ -133,6 +133,11 @@ class UsersController < ApplicationController
   end
   
   def getmessages
+    begin
+      Integer(params[:len])
+    rescue
+      return
+    end
     messages = ActiveRecord::Base.connection.
       execute("SELECT message.sender_id, message.to_type as type, message.name, " +
         "MAX(message.created_at) as created_at FROM (SELECT messages.to_id as sender_id, " +
@@ -144,7 +149,7 @@ class UsersController < ApplicationController
         "messages.to_id=#{@user.id} UNION SELECT messages.to_id as sender_id, messages.to_type, "+
         "users.name, messages.created_at FROM messages, users WHERE messages.to_type='User' " + 
         "AND messages.from_id=#{@user.id} AND messages.to_id=users.id) as message " +
-        "GROUP BY message.sender_id, message.to_type, message.name ORDER BY created_at DESC")
+        "GROUP BY message.sender_id, message.to_type, message.name ORDER BY created_at DESC LIMIT 25 OFFSET #{params[:len]}")
         
     messagesResponse = []
     messages.each do |m|
@@ -286,7 +291,7 @@ class UsersController < ApplicationController
   end
   
   def findUser
-    users = User.where('name ILIKE ?', "%#{params[:name]}%")
+    users = User.where('name ILIKE ?', "%#{params[:name]}%").order('name ASC')
     usersResponse = []
     users.each do |user|
       usersResponse << user.as_json.merge!(:image => URI.join(request.url, 
@@ -397,8 +402,19 @@ class UsersController < ApplicationController
   def getBasicInfo
     respond_to do |format|
         format.json { render :json => { :user => @user,  :image => URI.join(request.url, 
-        @user.get_image.imagefile.url).to_s} }
+        @user.get_image.imagefile.url).to_s, :androidVersion => "0.0.3", :iosVersion => "0.0.3"} }
      end
+  end
+  
+  def sendNotification
+    if @user.role == 'admin'
+      Thread.new do
+        send_all_notification(params[:title], params[:message])
+      end 
+      respond_to do |format|
+        format.json { render :json => { :success => true } }
+      end
+    end
   end
   
 end

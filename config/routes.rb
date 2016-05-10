@@ -112,4 +112,8 @@ Rails.application.routes.draw do
     :format => :json
   }
   
+  post 'sendNotification' => 'users#sendNotification', :defaults => {
+    :format => :json
+  }
+  
 end

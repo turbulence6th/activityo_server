@@ -1,8 +1,8 @@
 class EventsController < ApplicationController
   
   def getEvents
-    events = Event.near([params[:lat], params[:long]], params[:distance], :order => "distance")
-        .offset(params[:len]).limit(12)
+    events = Event.near([params[:lat], params[:long]], params[:distance])
+        .reorder('created_at DESC').offset(params[:len]).limit(12)
     eventTypes = params[:eventTypes]
     eventTypeParams = []
     eventTypes.each do |type|

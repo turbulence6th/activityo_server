@@ -1,5 +1,7 @@
 source 'https://rubygems.org'
 
+gem "houston"
+
 gem 'rack-attack'
 
 gem "paperclip", "~> 4.3"
