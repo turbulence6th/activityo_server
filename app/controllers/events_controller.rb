@@ -7,7 +7,7 @@ class EventsController < ApplicationController
     eventTypeParams = []
     eventTypes.each do |type|
       if type['checked'] == true
-        eventTypeParams << Event.eventTypes[type['value']]
+        eventTypeParams << type['key']
       end
     end
     events = events.where(:eventType => eventTypeParams)

@@ -37,8 +37,6 @@ class Event < ActiveRecord::Base
     :maximum => 500
   }
   
-  enum :eventType => GlobalConstants::EVENT_TYPES
-  
   belongs_to :user
   
   has_one :image, :as => :imageable, :dependent => :destroy
