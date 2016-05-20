@@ -27,7 +27,7 @@ class UsersController < ApplicationController
         :deleted => false)
      
       imageUrl = "https://graph.facebook.com/#{userParams['id']}/picture?height=400&width=400"
-      user.image = Image.new(:imagefile => URI.parse(imageUrl))
+      user.image = ProfileImage.new(:imagefile => URI.parse(imageUrl))
       
       Session.where(:deviceId => params[:deviceId]).destroy_all
       session = Session.new(:auth_token => SecureRandom.uuid, :pushToken => params[:pushToken],
@@ -259,6 +259,7 @@ class UsersController < ApplicationController
         :references => referencesResponse, 
         :follows => followsResponse,
         :image => URI.join(request.url, user.get_image.imagefile.url).to_s,
+        :cover => URI.join(request.url, user.get_cover.imagefile.url).to_s,
         :followStatus => followStatus,
         :referenced => referenced } }
     end
@@ -415,6 +416,35 @@ class UsersController < ApplicationController
         format.json { render :json => { :success => true } }
       end
     end
+  end
+  
+  def updateUser
+    @user.update_attributes(user_params)
+    respond_to do |format|
+      format.json { render :json => { :success => true } }
+    end
+  end
+  
+  def updateProfilePicture
+    image = Paperclip.io_adapters.for(params[:image]) 
+    image.original_filename = "something.png"
+    @user.image = ProfileImage.new(:imagefile => image)
+    respond_to do |format|
+      format.json { render :json => { :success => true } }
+    end
+  end
+  
+  def updateCoverPicture
+    image = Paperclip.io_adapters.for(params[:image]) 
+    image.original_filename = "something.png"
+    @user.cover = CoverImage.new(:imagefile => image)
+    respond_to do |format|
+      format.json { render :json => { :success => true } }
+    end
+  end
+  
+  def user_params
+    params.require(:user).permit(:description)
   end
   
 end

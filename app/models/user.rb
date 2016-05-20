@@ -17,28 +17,26 @@ class User < ActiveRecord::Base
   has_many :referenced, :class_name => 'Reference', :foreign_key => 'from_id', :dependent => :destroy 
   has_many :be_referenced, :class_name => 'Reference', :foreign_key => 'to_id', :dependent => :destroy
   
-  has_one :image, :as => :imageable, :dependent => :destroy
+  has_one :image, :class_name => 'ProfileImage', :as => :imageable, :dependent => :destroy
+  has_one :cover, :class_name => 'CoverImage', :as => :imageable, :dependent => :destroy
   
   has_many :joins, :dependent => :destroy
   
   has_many :sessions, :dependent => :destroy
   
   public
-  def friends
-    user1 = User.select('users.*')
-      .from('users, friends')
-      .where('friends.user_1_id=? AND friends.user_2_id=users.id AND friends.accepted=TRUE', self.id)
-    user2 = User.select('users.*')
-      .from('users, friends')
-      .where('friends.user_2_id=? AND friends.user_1_id=users.id AND friends.accepted=TRUE', self.id)
-    user1.union(user2)
-  end
-  
   def get_image
     if !self.image
-      return Image.new
+      return ProfileImage.new
     end
     return self.image
+  end
+  
+  def get_cover
+    if !self.cover
+      return CoverImage.new
+    end
+    return self.cover
   end
   
 end

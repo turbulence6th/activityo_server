@@ -116,4 +116,16 @@ Rails.application.routes.draw do
     :format => :json
   }
   
+  post 'updateUser' => 'users#updateUser', :defaults => {
+    :format => :json
+  }
+  
+  post 'updateProfilePicture' => 'users#updateProfilePicture', :defaults => {
+    :format => :json
+  }
+  
+  post 'updateCoverPicture' => 'users#updateCoverPicture', :defaults => {
+    :format => :json
+  }
+  
 end
