@@ -426,8 +426,7 @@ class UsersController < ApplicationController
   end
   
   def updateProfilePicture
-    image = Paperclip.io_adapters.for(params[:image]) 
-    image.original_filename = "something.png"
+    image = Paperclip.io_adapters.for(params[:image])
     @user.image = ProfileImage.new(:imagefile => image)
     respond_to do |format|
       format.json { render :json => { :success => true } }
@@ -435,8 +434,7 @@ class UsersController < ApplicationController
   end
   
   def updateCoverPicture
-    image = Paperclip.io_adapters.for(params[:image]) 
-    image.original_filename = "something.png"
+    image = Paperclip.io_adapters.for(params[:image])
     @user.cover = CoverImage.new(:imagefile => image)
     respond_to do |format|
       format.json { render :json => { :success => true } }

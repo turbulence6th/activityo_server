@@ -8,5 +8,4 @@ class CoverImage < Image
     :message => 'Resim olarak jpeg veya png yükleyiniz'
   }, :size => { :in => 0..5.megabytes }
 
-  validates :imagefile, :attachment_presence => true
 end

@@ -15,10 +15,8 @@ class EventsController < ApplicationController
     
     eventsResponse = []
     events.each do |e|
-      image = Image.find_by(:imageable_id => e.user_id, 
-        :imageable_type => 'User') || Image.new
       eventsResponse << e.as_json.merge!(:image => URI.join(request.url, 
-        image.imagefile.url).to_s )
+        e.user.get_image.imagefile.url).to_s )
     end
     
     respond_to do |format|
