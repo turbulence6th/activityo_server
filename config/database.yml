@@ -2,25 +2,22 @@ default: &default
   adapter: postgresql
   encoding: unicode
   pool: 5
-  host: localhost
-  
 
 development:
   <<: *default
+  host: localhost
   username: postgres
   password: postgres
   database: activityo_development
-  
 
 test:
   <<: *default
+  host: localhost
   username: postgres
   password: postgres
   database: activityo_test
 
 production:
   <<: *default
-  username: rails
-  password: <%= ENV['APP_DATABASE_PASSWORD'] %>
-  database: activityo_production
+  url: <%= ENV['DATABASE_URL'] %>
   

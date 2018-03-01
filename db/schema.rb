@@ -50,8 +50,7 @@ ActiveRecord::Schema.define(version: 20160517074010) do
     t.string   "imagefile_content_type"
     t.integer  "imagefile_file_size"
     t.datetime "imagefile_updated_at"
-    t.string   "type"
-    t.integer  "image_type",             default: 0
+    t.string   "type",                   default: "Image"
   end
 
   add_index "images", ["imageable_type", "imageable_id"], name: "index_images_on_imageable_type_and_imageable_id", using: :btree
